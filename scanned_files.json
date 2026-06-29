@@ -1739,6 +1739,86 @@
     "role": "ds",
     "date": "2026-06-10"
   },
+  "01-06\\Baddela_Raju_HartleyCo_Founding_Engineer.docx": {
+    "role": "ai",
+    "date": "2026-06-01"
+  },
+  "01-06\\Baddela_Raju_JuniorAIEngineer_MongooseGray.docx": {
+    "role": "ai",
+    "date": "2026-06-01"
+  },
+  "04-06\\Baddela_Raju_Curve_AIEngineer.docx": {
+    "role": "ai",
+    "date": "2026-06-04"
+  },
+  "05\\03-05\\Baddela_Raju_ForwardDeployedAIEngineer_Hadean.docx": {
+    "role": "ai",
+    "date": "2026-05-03"
+  },
+  "05\\10-05\\Baddela_Raju_Granola_AIEngineer.docx": {
+    "role": "ai",
+    "date": "2026-05-10"
+  },
+  "05\\10-05\\BakersHughes_AIEngineer_BaddelaRaju.docx": {
+    "role": "ai",
+    "date": "2026-05-09"
+  },
+  "05\\13-05\\Baddela_Raju_AIEngineer_OhoGroup.docx": {
+    "role": "ai",
+    "date": "2026-05-13"
+  },
+  "05\\15-05\\Baddela_Raju_HunterBond_GraduateAIEngineer.docx": {
+    "role": "ai",
+    "date": "2026-05-15"
+  },
+  "05\\2\\DeveloperLink_AIEngineer_BaddelaRaju.docx": {
+    "role": "ai",
+    "date": "2026-04-22"
+  },
+  "05\\20-05\\Baddela_Raju_Founding_Engineer_AI_Manufacturing.docx": {
+    "role": "ai",
+    "date": "2026-05-20"
+  },
+  "05\\20-05\\Baddela_Raju_GraduateAIEngineer.docx": {
+    "role": "ai",
+    "date": "2026-05-20"
+  },
+  "05\\25-05\\Baddela_Raju_AIEngineer_AllenLane.docx": {
+    "role": "ai",
+    "date": "2026-05-25"
+  },
+  "05\\26-05\\Baddela_Raju_AIEngineer_BounceDigital.docx": {
+    "role": "ai",
+    "date": "2026-05-26"
+  },
+  "05\\3\\Baddela_Raju_AIEngineer.docx": {
+    "role": "ai",
+    "date": "2026-04-28"
+  },
+  "05\\3\\Baddela_Raju_AIEngineer_HB2.docx": {
+    "role": "ai",
+    "date": "2026-04-28"
+  },
+  "05\\tesco\\Baddela_Raju_SoftwareAIEngineer_SFTech.docx": {
+    "role": "ai",
+    "date": "2026-04-16"
+  },
+  "05\\tesco\\Baddela_Raju_WaveGroup_AIEngineerResearcher.docx": {
+    "role": "ai",
+    "date": "2026-04-06"
+  },
+  "05\\tesco\\Joveo_AIEngineer_BaddelaRaju.docx": {
+    "role": "ai",
+    "date": "2026-04-16"
+  },
+  "08-06\\Baddela_Raju_AIEngineer_SpaceExecutive.docx": {
+    "role": "ai",
+    "date": "2026-06-08"
+  },
+  "15-06\\Baddela_Raju_MongooseGray_JuniorAIEngineer.docx": {
+    "role": "ai",
+    "date": "2026-06-15"
+  },
   "01-06\\Baddela_Raju_CoverLetter_Alpine_F1.docx": {
     "role": "other",
     "date": "2026-06-01"
@@ -1759,20 +1839,12 @@
     "role": "other",
     "date": "2026-06-01"
   },
-  "01-06\\Baddela_Raju_HartleyCo_Founding_Engineer.docx": {
-    "role": "ai",
-    "date": "2026-06-01"
-  },
-  "01-06\\Baddela_Raju_JuniorAIEngineer_MongooseGray.docx": {
-    "role": "ai",
-    "date": "2026-06-01"
-  },
   "01-06\\Baddela_Raju_Junior_Research_Assistant_Helic.docx": {
     "role": "other",
     "date": "2026-06-01"
   },
   "01-06\\Baddela_Raju_ML_Scientist_Expedia.docx": {
-    "role": "other",
+    "role": "ml",
     "date": "2026-06-01"
   },
   "01-06\\Baddela_Raju_Pricing_Analyst_Houst.docx": {
@@ -1919,10 +1991,6 @@
     "role": "other",
     "date": "2026-06-04"
   },
-  "04-06\\Baddela_Raju_Curve_AIEngineer.docx": {
-    "role": "ai",
-    "date": "2026-06-04"
-  },
   "04-06\\Baddela_Raju_Curve_CoverLetter.docx": {
     "role": "other",
     "date": "2026-06-04"
@@ -1944,7 +2012,7 @@
     "date": "2026-06-04"
   },
   "04-06\\Baddela_Raju_ML_Scientist_StackAdapt.docx": {
-    "role": "other",
+    "role": "ml",
     "date": "2026-06-04"
   },
   "04-06\\Baddela_Raju_Python_Engineer_Station.docx": {
@@ -2023,10 +2091,6 @@
     "role": "other",
     "date": "2026-04-30"
   },
-  "05\\03-05\\Baddela_Raju_ForwardDeployedAIEngineer_Hadean.docx": {
-    "role": "ai",
-    "date": "2026-05-03"
-  },
   "05\\09-05\\prompt_engineer_resume.docx": {
     "role": "other",
     "date": "2026-05-04"
@@ -2038,14 +2102,6 @@
   "05\\10-05\\Baddela_Raju_AIML_InnovoData.docx": {
     "role": "other",
     "date": "2026-05-10"
-  },
-  "05\\10-05\\Baddela_Raju_Granola_AIEngineer.docx": {
-    "role": "ai",
-    "date": "2026-05-10"
-  },
-  "05\\10-05\\BakersHughes_AIEngineer_BaddelaRaju.docx": {
-    "role": "ai",
-    "date": "2026-05-09"
   },
   "05\\10-05\\hastings_graduate_analyst_resume.docx": {
     "role": "other",
@@ -2123,10 +2179,6 @@
     "role": "other",
     "date": "2026-05-12"
   },
-  "05\\13-05\\Baddela_Raju_AIEngineer_OhoGroup.docx": {
-    "role": "ai",
-    "date": "2026-05-13"
-  },
   "05\\13-05\\Baddela_Raju_AVEVA_AI_ML_Graduate.docx": {
     "role": "other",
     "date": "2026-05-13"
@@ -2175,10 +2227,6 @@
     "role": "other",
     "date": "2026-05-14"
   },
-  "05\\15-05\\Baddela_Raju_HunterBond_GraduateAIEngineer.docx": {
-    "role": "ai",
-    "date": "2026-05-15"
-  },
   "05\\15-05\\Baddela_Raju_Intelligent_Systems_Engineer.docx": {
     "role": "other",
     "date": "2026-05-15"
@@ -2219,10 +2267,6 @@
     "role": "other",
     "date": "2026-04-22"
   },
-  "05\\2\\DeveloperLink_AIEngineer_BaddelaRaju.docx": {
-    "role": "ai",
-    "date": "2026-04-22"
-  },
   "05\\2\\iProov_CV_BaddelaRaju.docx": {
     "role": "other",
     "date": "2026-04-22"
@@ -2241,14 +2285,6 @@
   },
   "05\\20-05\\Baddela_Raju_Cover_Letter_Capgemini.docx": {
     "role": "other",
-    "date": "2026-05-20"
-  },
-  "05\\20-05\\Baddela_Raju_Founding_Engineer_AI_Manufacturing.docx": {
-    "role": "ai",
-    "date": "2026-05-20"
-  },
-  "05\\20-05\\Baddela_Raju_GraduateAIEngineer.docx": {
-    "role": "ai",
     "date": "2026-05-20"
   },
   "05\\20-05\\Baddela_Raju_Graduate_SoftwareDev_ScottLogic.docx": {
@@ -2295,17 +2331,9 @@
     "role": "other",
     "date": "2026-05-24"
   },
-  "05\\25-05\\Baddela_Raju_AIEngineer_AllenLane.docx": {
-    "role": "ai",
-    "date": "2026-05-25"
-  },
   "05\\25-05\\Baddela_Raju_JuniorAssociate_McKinsey.docx": {
     "role": "other",
     "date": "2026-05-25"
-  },
-  "05\\26-05\\Baddela_Raju_AIEngineer_BounceDigital.docx": {
-    "role": "ai",
-    "date": "2026-05-26"
   },
   "05\\26-05\\Baddela_Raju_Associate_Tech_Consultant_CTA.docx": {
     "role": "other",
@@ -2465,14 +2493,6 @@
   },
   "05\\3\\baddela_raju_agentic_engineer.docx": {
     "role": "other",
-    "date": "2026-04-28"
-  },
-  "05\\3\\Baddela_Raju_AIEngineer.docx": {
-    "role": "ai",
-    "date": "2026-04-28"
-  },
-  "05\\3\\Baddela_Raju_AIEngineer_HB2.docx": {
-    "role": "ai",
     "date": "2026-04-28"
   },
   "05\\3\\baddela_raju_ajbell_coverletter.docx": {
@@ -2667,14 +2687,6 @@
     "role": "other",
     "date": "2026-04-06"
   },
-  "05\\tesco\\Baddela_Raju_SoftwareAIEngineer_SFTech.docx": {
-    "role": "ai",
-    "date": "2026-04-16"
-  },
-  "05\\tesco\\Baddela_Raju_WaveGroup_AIEngineerResearcher.docx": {
-    "role": "ai",
-    "date": "2026-04-06"
-  },
   "05\\tesco\\BigPhoneStore_AppliedMLEngineer_BaddelaRaju.docx": {
     "role": "other",
     "date": "2026-04-16"
@@ -2690,10 +2702,6 @@
   "05\\tesco\\FDE_BaddelaRaju.docx": {
     "role": "other",
     "date": "2026-04-15"
-  },
-  "05\\tesco\\Joveo_AIEngineer_BaddelaRaju.docx": {
-    "role": "ai",
-    "date": "2026-04-16"
   },
   "05\\tesco\\Joveo_Graduate_SWE_Baddela_Raju.docx": {
     "role": "other",
@@ -2789,10 +2797,6 @@
   },
   "08-06\\Baddela_Raju_AIAdoptionSpecialist_Spektr.docx": {
     "role": "other",
-    "date": "2026-06-08"
-  },
-  "08-06\\Baddela_Raju_AIEngineer_SpaceExecutive.docx": {
-    "role": "ai",
     "date": "2026-06-08"
   },
   "08-06\\Baddela_Raju_Autodesk_GradSWE.docx": {
@@ -3017,10 +3021,6 @@
   },
   "15-06\\Baddela_Raju_Computershare_GraduateAIAnalyst.docx": {
     "role": "other",
-    "date": "2026-06-15"
-  },
-  "15-06\\Baddela_Raju_MongooseGray_JuniorAIEngineer.docx": {
-    "role": "ai",
     "date": "2026-06-15"
   },
   "15-06\\Baddela_Raju_Softwire_Graduate_SWE.docx": {
