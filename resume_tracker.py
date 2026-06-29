@@ -140,7 +140,7 @@ def classify_role(filename):
     for kw in MLE_PATTERN:
         if kw in name:
             return "ml"
-    return None
+    return "other"
 
 def load_scan_log():
     if os.path.exists(SCAN_LOG):
@@ -179,13 +179,13 @@ def scan_and_log():
             mtime     = os.path.getmtime(fpath)
             file_date = datetime.fromtimestamp(mtime).strftime("%Y-%m-%d")
 
-            if role is None:
+            scan_log[rel_path] = {"role": role, "date": file_date}
+
+            if role == "other":
                 unknown.append(rel_path)
-                scan_log[rel_path] = {"role": "unknown", "date": file_date}
                 continue
 
             add_application_for_date(file_date, role)
-            scan_log[rel_path] = {"role": role, "date": file_date}
             new_files.append((rel_path, role, file_date))
 
     save_scan_log(scan_log)
@@ -209,11 +209,11 @@ def scan_and_log():
         for date in sorted(date_counts)[-5:]:
             print(f"    {date}: {date_counts[date]} applications")
     if unknown:
-        print(f"\n  Unclassified ({len(unknown)}) — add manually with 'add' command:")
+        print(f"\n  Other / Unclassified ({len(unknown)}):")
         for p in unknown[:8]:
             print(f"    {os.path.basename(p)}")
         if len(unknown) > 8:
-            print(f"    ... and {len(unknown)-8} more")
+            print(f"    ... and {len(unknown)-8} more (see scanned_files.json for full list)")
     print(f"{'='*60}\n")
 
     if new_files:
