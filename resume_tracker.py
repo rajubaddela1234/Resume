@@ -229,7 +229,7 @@ def auto_push_log():
             capture_output=True, cwd=BASE
         )
         if result.returncode == 0:
-            subprocess.run(["git", "push"], capture_output=True, cwd=BASE)
+            subprocess.run(["git", "push", "origin", "main"], capture_output=True, cwd=BASE)
     except Exception:
         pass
 
