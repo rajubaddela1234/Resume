@@ -1695,6 +1695,50 @@
     "role": "ai",
     "date": "2026-06-10"
   },
+  "01-06\\Baddela_Raju_Excel_Data_Transformation_Analyst_Chaucer.docx": {
+    "role": "da",
+    "date": "2026-06-01"
+  },
+  "01-06\\Baddela_Raju_Harnham_Associate_Consultant_DS_AI.docx": {
+    "role": "ds",
+    "date": "2026-06-01"
+  },
+  "05\\10-05\\Baddela_Raju_DataScienceConsultant.docx": {
+    "role": "ds",
+    "date": "2026-05-10"
+  },
+  "05\\10-05\\Nokia_DataScience_Trainee_BaddelaRaju.docx": {
+    "role": "ds",
+    "date": "2026-05-10"
+  },
+  "05\\14-05\\Baddela_Raju_Junior_DS_Dominos.docx": {
+    "role": "ds",
+    "date": "2026-05-14"
+  },
+  "05\\27-05\\Baddela_Raju_Barclays_DataScience.docx": {
+    "role": "ds",
+    "date": "2026-05-27"
+  },
+  "05\\30-05\\Baddela_Raju_Junior_Sports_Quant_Analyst.docx": {
+    "role": "ds",
+    "date": "2026-05-30"
+  },
+  "05\\tesco\\Baddela_Raju_DataScience_Intern_Tesco.docx": {
+    "role": "ds",
+    "date": "2026-04-16"
+  },
+  "05\\tesco\\Lloyds_AIEngineer_BaddelaRaju.docx": {
+    "role": "ds",
+    "date": "2026-04-15"
+  },
+  "08-06\\Baddela_Raju_Cummins_DataScience.docx": {
+    "role": "ds",
+    "date": "2026-06-08"
+  },
+  "14-06\\Baddela_Raju_Fortray_DataScience_Associate.docx": {
+    "role": "ds",
+    "date": "2026-06-10"
+  },
   "01-06\\Baddela_Raju_CoverLetter_Alpine_F1.docx": {
     "role": "other",
     "date": "2026-06-01"
@@ -1711,24 +1755,16 @@
     "role": "other",
     "date": "2026-06-01"
   },
-  "01-06\\Baddela_Raju_Excel_Data_Transformation_Analyst_Chaucer.docx": {
-    "role": "da",
-    "date": "2026-06-01"
-  },
   "01-06\\Baddela_Raju_Fitch_Solutions_Architect.docx": {
     "role": "other",
     "date": "2026-06-01"
   },
-  "01-06\\Baddela_Raju_Harnham_Associate_Consultant_DS_AI.docx": {
-    "role": "ds",
-    "date": "2026-06-01"
-  },
   "01-06\\Baddela_Raju_HartleyCo_Founding_Engineer.docx": {
-    "role": "other",
+    "role": "ai",
     "date": "2026-06-01"
   },
   "01-06\\Baddela_Raju_JuniorAIEngineer_MongooseGray.docx": {
-    "role": "other",
+    "role": "ai",
     "date": "2026-06-01"
   },
   "01-06\\Baddela_Raju_Junior_Research_Assistant_Helic.docx": {
@@ -1884,7 +1920,7 @@
     "date": "2026-06-04"
   },
   "04-06\\Baddela_Raju_Curve_AIEngineer.docx": {
-    "role": "other",
+    "role": "ai",
     "date": "2026-06-04"
   },
   "04-06\\Baddela_Raju_Curve_CoverLetter.docx": {
@@ -1988,7 +2024,7 @@
     "date": "2026-04-30"
   },
   "05\\03-05\\Baddela_Raju_ForwardDeployedAIEngineer_Hadean.docx": {
-    "role": "other",
+    "role": "ai",
     "date": "2026-05-03"
   },
   "05\\09-05\\prompt_engineer_resume.docx": {
@@ -2003,16 +2039,12 @@
     "role": "other",
     "date": "2026-05-10"
   },
-  "05\\10-05\\Baddela_Raju_DataScienceConsultant.docx": {
-    "role": "ds",
-    "date": "2026-05-10"
-  },
   "05\\10-05\\Baddela_Raju_Granola_AIEngineer.docx": {
-    "role": "other",
+    "role": "ai",
     "date": "2026-05-10"
   },
   "05\\10-05\\BakersHughes_AIEngineer_BaddelaRaju.docx": {
-    "role": "other",
+    "role": "ai",
     "date": "2026-05-09"
   },
   "05\\10-05\\hastings_graduate_analyst_resume.docx": {
@@ -2022,10 +2054,6 @@
   "05\\10-05\\MindFoundry_CoverLetter_BaddelaRaju.docx": {
     "role": "other",
     "date": "2026-05-09"
-  },
-  "05\\10-05\\Nokia_DataScience_Trainee_BaddelaRaju.docx": {
-    "role": "ds",
-    "date": "2026-05-10"
   },
   "05\\12-05\\Baddela_Raju_AI_DeploymentEngineer_Citation.docx": {
     "role": "other",
@@ -2096,7 +2124,7 @@
     "date": "2026-05-12"
   },
   "05\\13-05\\Baddela_Raju_AIEngineer_OhoGroup.docx": {
-    "role": "other",
+    "role": "ai",
     "date": "2026-05-13"
   },
   "05\\13-05\\Baddela_Raju_AVEVA_AI_ML_Graduate.docx": {
@@ -2143,16 +2171,12 @@
     "role": "other",
     "date": "2026-05-14"
   },
-  "05\\14-05\\Baddela_Raju_Junior_DS_Dominos.docx": {
-    "role": "ds",
-    "date": "2026-05-14"
-  },
   "05\\14-05\\Graduate_Software_Engineer_Helvar.docx": {
     "role": "other",
     "date": "2026-05-14"
   },
   "05\\15-05\\Baddela_Raju_HunterBond_GraduateAIEngineer.docx": {
-    "role": "other",
+    "role": "ai",
     "date": "2026-05-15"
   },
   "05\\15-05\\Baddela_Raju_Intelligent_Systems_Engineer.docx": {
@@ -2196,7 +2220,7 @@
     "date": "2026-04-22"
   },
   "05\\2\\DeveloperLink_AIEngineer_BaddelaRaju.docx": {
-    "role": "other",
+    "role": "ai",
     "date": "2026-04-22"
   },
   "05\\2\\iProov_CV_BaddelaRaju.docx": {
@@ -2220,11 +2244,11 @@
     "date": "2026-05-20"
   },
   "05\\20-05\\Baddela_Raju_Founding_Engineer_AI_Manufacturing.docx": {
-    "role": "other",
+    "role": "ai",
     "date": "2026-05-20"
   },
   "05\\20-05\\Baddela_Raju_GraduateAIEngineer.docx": {
-    "role": "other",
+    "role": "ai",
     "date": "2026-05-20"
   },
   "05\\20-05\\Baddela_Raju_Graduate_SoftwareDev_ScottLogic.docx": {
@@ -2272,7 +2296,7 @@
     "date": "2026-05-24"
   },
   "05\\25-05\\Baddela_Raju_AIEngineer_AllenLane.docx": {
-    "role": "other",
+    "role": "ai",
     "date": "2026-05-25"
   },
   "05\\25-05\\Baddela_Raju_JuniorAssociate_McKinsey.docx": {
@@ -2280,7 +2304,7 @@
     "date": "2026-05-25"
   },
   "05\\26-05\\Baddela_Raju_AIEngineer_BounceDigital.docx": {
-    "role": "other",
+    "role": "ai",
     "date": "2026-05-26"
   },
   "05\\26-05\\Baddela_Raju_Associate_Tech_Consultant_CTA.docx": {
@@ -2313,10 +2337,6 @@
   },
   "05\\27-05\\Baddela_Raju_AI_Analyst_MGroup.docx": {
     "role": "other",
-    "date": "2026-05-27"
-  },
-  "05\\27-05\\Baddela_Raju_Barclays_DataScience.docx": {
-    "role": "ds",
     "date": "2026-05-27"
   },
   "05\\27-05\\Baddela_Raju_CoverLetter_Acturis.docx": {
@@ -2448,11 +2468,11 @@
     "date": "2026-04-28"
   },
   "05\\3\\Baddela_Raju_AIEngineer.docx": {
-    "role": "other",
+    "role": "ai",
     "date": "2026-04-28"
   },
   "05\\3\\Baddela_Raju_AIEngineer_HB2.docx": {
-    "role": "other",
+    "role": "ai",
     "date": "2026-04-28"
   },
   "05\\3\\baddela_raju_ajbell_coverletter.docx": {
@@ -2543,10 +2563,6 @@
     "role": "other",
     "date": "2026-05-30"
   },
-  "05\\30-05\\Baddela_Raju_Junior_Sports_Quant_Analyst.docx": {
-    "role": "ds",
-    "date": "2026-05-30"
-  },
   "05\\30-05\\Baddela_Raju_Python_Engineer_Data_BCIS.docx": {
     "role": "other",
     "date": "2026-05-30"
@@ -2619,10 +2635,6 @@
     "role": "other",
     "date": "2026-04-08"
   },
-  "05\\tesco\\Baddela_Raju_DataScience_Intern_Tesco.docx": {
-    "role": "ds",
-    "date": "2026-04-16"
-  },
   "05\\tesco\\Baddela_Raju_FirstAI_Graduate_Consultant.docx": {
     "role": "other",
     "date": "2026-04-08"
@@ -2656,11 +2668,11 @@
     "date": "2026-04-06"
   },
   "05\\tesco\\Baddela_Raju_SoftwareAIEngineer_SFTech.docx": {
-    "role": "other",
+    "role": "ai",
     "date": "2026-04-16"
   },
   "05\\tesco\\Baddela_Raju_WaveGroup_AIEngineerResearcher.docx": {
-    "role": "other",
+    "role": "ai",
     "date": "2026-04-06"
   },
   "05\\tesco\\BigPhoneStore_AppliedMLEngineer_BaddelaRaju.docx": {
@@ -2680,16 +2692,12 @@
     "date": "2026-04-15"
   },
   "05\\tesco\\Joveo_AIEngineer_BaddelaRaju.docx": {
-    "role": "other",
+    "role": "ai",
     "date": "2026-04-16"
   },
   "05\\tesco\\Joveo_Graduate_SWE_Baddela_Raju.docx": {
     "role": "other",
     "date": "2026-04-20"
-  },
-  "05\\tesco\\Lloyds_AIEngineer_BaddelaRaju.docx": {
-    "role": "ds",
-    "date": "2026-04-15"
   },
   "05\\tesco\\medly_fullstack_resume.docx": {
     "role": "other",
@@ -2784,7 +2792,7 @@
     "date": "2026-06-08"
   },
   "08-06\\Baddela_Raju_AIEngineer_SpaceExecutive.docx": {
-    "role": "other",
+    "role": "ai",
     "date": "2026-06-08"
   },
   "08-06\\Baddela_Raju_Autodesk_GradSWE.docx": {
@@ -2809,10 +2817,6 @@
   },
   "08-06\\Baddela_Raju_Cummins_CoverLetter.docx": {
     "role": "other",
-    "date": "2026-06-08"
-  },
-  "08-06\\Baddela_Raju_Cummins_DataScience.docx": {
-    "role": "ds",
     "date": "2026-06-08"
   },
   "08-06\\Baddela_Raju_Era4_BusinessAnalyst.docx": {
@@ -2987,10 +2991,6 @@
     "role": "other",
     "date": "2026-06-10"
   },
-  "14-06\\Baddela_Raju_Fortray_DataScience_Associate.docx": {
-    "role": "ds",
-    "date": "2026-06-10"
-  },
   "14-06\\Baddela_Raju_Malaberg_Digital_Marketing_Agentic.docx": {
     "role": "other",
     "date": "2026-06-10"
@@ -3020,7 +3020,7 @@
     "date": "2026-06-15"
   },
   "15-06\\Baddela_Raju_MongooseGray_JuniorAIEngineer.docx": {
-    "role": "other",
+    "role": "ai",
     "date": "2026-06-15"
   },
   "15-06\\Baddela_Raju_Softwire_Graduate_SWE.docx": {
