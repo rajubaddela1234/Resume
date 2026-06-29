@@ -958,7 +958,7 @@ Return ONLY valid JSON (no markdown, no extra text):
 
     try:
         genai.configure(api_key=api_key)
-        model    = genai.GenerativeModel("gemini-2.5-pro")
+        model    = genai.GenerativeModel("gemini-2.5-flash")
         response = model.generate_content(prompt)
         text     = response.text.strip()
         match    = _re.search(r'\{[\s\S]*\}', text)
