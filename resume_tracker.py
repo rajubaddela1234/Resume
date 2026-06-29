@@ -16,16 +16,23 @@ SCAN_LOG  = os.path.join(BASE, "scanned_files.json")
 
 # Keywords to classify role from filename (checked in order)
 ROLE_KEYWORDS = {
-    "da": ["data_analyst", "dataanalyst", "labour_model", "labourmodel"],
-    "ds": ["data_scientist", "datascientist", "data_science"],
-    "ml": ["ml_engineer", "ml_researcher", "applied_ml", "founding_ml"],
+    "da": ["data_analyst", "dataanalyst", "labour_model", "labourmodel",
+           "data_transformation_analyst", "excel_data"],
+    "ds": ["data_scientist", "datascientist", "data_science", "datascience",
+           "ds_ai", "_ds_", "quant_research", "quant_analyst"],
+    "ml": ["ml_engineer", "ml_researcher", "ml_scientist", "applied_ml", "founding_ml",
+           "deep_learning", "nlp_engineer", "computer_vision"],
     "ai": [
         "ai_engineer", "ai_developer", "ai_devloper", "ai_builder", "ai_specialist",
-        "ai_solutions", "ai_creative", "ai_qa", "ai_researcher", "ai_platform",
-        "ai_associate", "ai_operations", "ai_data", "applied_ai", "agentic_ai",
-        "agenticai", "llm_engineer", "rag_engineer", "graduate_ai", "trainee_ai",
-        "aiml_engineer", "forward_deployed_ai", "generative_ai", "ml_evaluation",
-        "mle_agentic", "ai_intern", "numi_ai",
+        "ai_solutions", "ai_creative", "ai_qa", "ai_researcher", "ai_research",
+        "ai_platform", "ai_associate", "ai_operations", "ai_data", "applied_ai",
+        "agentic_ai", "agenticai", "llm_engineer", "rag_engineer", "graduate_ai",
+        "trainee_ai", "aiml_engineer", "forward_deployed_ai", "generative_ai",
+        "ml_evaluation", "mle_agentic", "ai_intern", "numi_ai",
+        "ai_architect", "ai_software", "ai_security", "ai_product", "ai_strategy",
+        "datascience_specialist", "data_science_specialist",
+        "software_ai", "founding_ai", "junior_ai", "senior_ai",
+        "aiengineer", "aiengineering", "founding_engineer",
     ],
 }
 MLE_PATTERN = ["_mle", "mle_", "mle."]   # standalone MLE files → ml
