@@ -4,6 +4,7 @@ import random
 import subprocess
 import smtplib
 import sys
+import time
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from datetime import datetime
@@ -802,10 +803,21 @@ def setup_scheduler():
         if r.returncode != 0:
             print(f"         {r.stderr.strip()}")
 
+    # Watcher uses pythonw.exe (no console window) so it runs silently in background
+    pythonw = python.replace("python.exe", "pythonw.exe")
+    tw = f'\\"{pythonw}\\" \\"{script}\\"'
+
     register("ResumeTracker_Morning_7AM",     "/sc daily /st 07:00", "morning", "[07:00] 7 AM motivation email")
     register("ResumeTracker_Midday_12PM",     "/sc daily /st 12:00", "midday",  "[12:00] 12 PM progress email")
-    register("ResumeTracker_Scan_OnLogin",    "/sc onlogon",         "scan",    "[Login ] Auto-scan resumes on PC startup")
-    register("ResumeTracker_Scan_Every30Min", "/sc minute /mo 30",   "scan",    "[Every 30min] Auto-scan new resumes")
+
+    # Watcher: starts silently at login, detects new files every 30s
+    watch_cmd = f'schtasks /create /tn "ResumeTracker_Watcher" /tr "{tw} watch" /sc onlogon /f'
+    r = subprocess.run(watch_cmd, shell=True, capture_output=True, text=True)
+    tag = "[OK]  " if r.returncode == 0 else "[FAIL]"
+    print(f"  {tag}  [Login ] File watcher starts silently on PC startup (checks every 30s)")
+    if r.returncode != 0:
+        print(f"         {r.stderr.strip()}")
+        print(f"         Run this terminal as Administrator and try again.")
 
     print(f"\n  How it works:")
     print(f"    - Drop a .docx into any folder under {BASE}")
@@ -815,6 +827,46 @@ def setup_scheduler():
     print(f"    schtasks /delete /tn ResumeTracker_Scan_OnLogin /f")
     print(f"    schtasks /delete /tn ResumeTracker_Scan_Every30Min /f")
     print(f"{'='*60}\n")
+
+# ─── Background file watcher ─────────────────────────────────────────────────
+
+def watch_folder(interval=30):
+    """Polls every `interval` seconds; scans instantly when new .docx is detected."""
+    log_path = os.path.join(BASE, "watcher.log")
+
+    def log(msg):
+        line = f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] {msg}"
+        with open(log_path, "a") as f:
+            f.write(line + "\n")
+
+    log(f"Watcher started — polling every {interval}s for new .docx files in {BASE}")
+
+    # Build initial snapshot of all .docx files
+    def get_snapshot():
+        snap = {}
+        for root, dirs, files in os.walk(BASE):
+            dirs[:] = [d for d in dirs if not d.startswith('.')]
+            for fname in files:
+                if fname.lower().endswith('.docx'):
+                    fpath = os.path.join(root, fname)
+                    snap[fpath] = os.path.getmtime(fpath)
+        return snap
+
+    known = get_snapshot()
+    log(f"Snapshot: {len(known)} existing .docx files")
+
+    while True:
+        time.sleep(interval)
+        try:
+            current = get_snapshot()
+            new_files = [p for p in current if p not in known]
+            if new_files:
+                log(f"Detected {len(new_files)} new file(s): {[os.path.basename(p) for p in new_files]}")
+                results = scan_and_log()
+                log(f"Scan complete — {len(results)} new applications logged")
+            known = current
+        except Exception as e:
+            log(f"Error: {e}")
 
 # ─── CLI ──────────────────────────────────────────────────────────────────────
 
@@ -868,6 +920,8 @@ if __name__ == "__main__":
                     toast(f"{total}/{GOAL} Jobs Applied", f"{GOAL - total} more to go today! Keep pushing!")
     elif args[0] == "scan":
         scan_and_log()
+    elif args[0] == "watch":
+        watch_folder()
     elif args[0] == "summary":
         show_summary()
     elif args[0] == "setup":
