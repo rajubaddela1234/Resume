@@ -116,7 +116,7 @@ def load_config():
         ("EMAIL_SENDER",   "email_sender"),
         ("EMAIL_PASSWORD", "email_password"),
         ("EMAIL_RECEIVER", "email_receiver"),
-        ("CLAUDE_API_KEY", "claude_api_key"),
+        ("GEMINI_API_KEY", "gemini_api_key"),
     ]:
         val = os.environ.get(env_key, "")
         if val:
@@ -286,17 +286,45 @@ def build_morning_html():
     roles_data = data.get("roles", {r: 0 for r in ROLES})
     remaining  = max(0, GOAL - applied)
     llm        = generate_llm_content("morning", applied, roles_data, remaining)
+
     if llm:
-        headline = llm.get("headline", "Rise and Dominate Today")
-        body     = llm.get("body", "")
-        color    = "#1a5276"
+        headline    = llm.get("headline", "Rise and Dominate Today")
+        body        = llm.get("body", "")
+        strategy    = llm.get("strategy", "")
+        affirmation = llm.get("affirmation", "")
+        color       = "#1a5276"
     else:
         headline, body, color = get_daily_motivation()
-    date_str = today_display()
+        strategy    = ""
+        affirmation = ""
+
+    date_str   = today_display()
     roles_list = "".join(
         f"<li style='margin:6px 0;font-size:14px;color:#2c3e50;'><b>{label}</b></li>"
         for label in ROLES.values()
     )
+
+    strategy_block = f"""
+  <!-- Today's Strategy -->
+  <tr><td style='padding:0 28px 20px;'>
+    <div style='background:#eaf4fb;border-left:5px solid #2980b9;border-radius:8px;padding:18px 20px;'>
+      <p style='margin:0 0 8px;font-size:14px;font-weight:bold;color:#1a5276;
+                text-transform:uppercase;letter-spacing:1px;'>Today's Strategy</p>
+      <p style='margin:0;font-size:14px;color:#2c3e50;line-height:1.7;'>{strategy}</p>
+    </div>
+  </td></tr>""" if strategy else ""
+
+    affirmation_block = f"""
+  <!-- Affirmation -->
+  <tr><td style='padding:0 28px 24px;'>
+    <div style='background:linear-gradient(135deg,#1a5276,#6e2f8c);border-radius:10px;
+                padding:18px 24px;text-align:center;'>
+      <p style='margin:0;font-size:15px;font-style:italic;color:#fff;line-height:1.6;'>
+        &ldquo;{affirmation}&rdquo;
+      </p>
+    </div>
+  </td></tr>""" if affirmation else ""
+
     return f"""
 <!DOCTYPE html>
 <html>
@@ -315,15 +343,17 @@ def build_morning_html():
   </td></tr>
 
   <!-- Motivation body -->
-  <tr><td style='padding:30px 28px 10px;text-align:center;'>
-    <p style='font-size:17px;color:#2c3e50;line-height:1.7;margin:0;'>{body}</p>
+  <tr><td style='padding:28px 28px 16px;'>
+    <p style='font-size:16px;color:#2c3e50;line-height:1.8;margin:0;'>{body}</p>
   </td></tr>
 
+  {strategy_block}
+
   <!-- Daily goal banner -->
-  <tr><td style='padding:20px 28px;'>
+  <tr><td style='padding:4px 28px 20px;'>
     <div style='background:linear-gradient(135deg,{color},#2980b9);border-radius:10px;
                 padding:20px;text-align:center;'>
-      <p style='color:#fff;margin:0;font-size:28px;font-weight:bold;'>🎯 TODAY'S GOAL: {GOAL} APPLICATIONS</p>
+      <p style='color:#fff;margin:0;font-size:26px;font-weight:bold;'>TODAY'S GOAL: {GOAL} APPLICATIONS</p>
       <p style='color:#d6eaf8;margin:6px 0 0;font-size:14px;'>Across 4 roles — AI · DA · DS · ML</p>
     </div>
   </td></tr>
@@ -335,6 +365,8 @@ def build_morning_html():
       {roles_list}
     </ul>
   </td></tr>
+
+  {affirmation_block}
 
 </table>
 <p style='text-align:center;font-size:11px;color:#bbb;margin-top:12px;'>
@@ -406,11 +438,19 @@ def build_midday_html(applied, roles_data, label_time="12:00 PM"):
         )
 
     # ── Override with LLM personalised content if available ──────
-    email_kind = "midnight" if label_time == "12:00 AM" else "check"
-    llm = generate_llm_content(email_kind, applied, roles_data, remaining)
+    email_kind  = "midnight" if label_time == "12:00 AM" else "check"
+    llm         = generate_llm_content(email_kind, applied, roles_data, remaining)
+    action_plan = ""
+    role_insight= ""
+    tomorrow_plan = ""
+    strength    = ""
     if llm:
-        end_title = llm.get("headline", end_title)
-        end_body  = llm.get("body", end_body)
+        end_title     = llm.get("headline", end_title)
+        end_body      = llm.get("body", end_body)
+        action_plan   = llm.get("action_plan", "")
+        role_insight  = llm.get("role_insight", "")
+        tomorrow_plan = llm.get("tomorrow_plan", "")
+        strength      = llm.get("strength", "")
 
     # ── Role rows ────────────────────────────────────────────
     roles_rows = ""
@@ -470,7 +510,7 @@ def build_midday_html(applied, roles_data, label_time="12:00 PM"):
   </td></tr>
 
   <!-- Ending message -->
-  <tr><td style='padding:4px 24px 28px;'>
+  <tr><td style='padding:4px 24px 16px;'>
     <div style='background:{end_color}18;border-left:5px solid {end_color};
                 border-radius:8px;padding:22px;'>
       <p style='margin:0 0 10px;font-size:19px;font-weight:bold;color:{end_color};'>
@@ -481,6 +521,14 @@ def build_midday_html(applied, roles_data, label_time="12:00 PM"):
       </p>
     </div>
   </td></tr>
+
+  {'<!-- Action Plan --><tr><td style="padding:0 24px 16px;"><div style="background:#eafaf1;border-left:5px solid #27ae60;border-radius:8px;padding:18px 20px;"><p style="margin:0 0 8px;font-size:13px;font-weight:bold;color:#1e8449;text-transform:uppercase;letter-spacing:1px;">Next 2 Hours — Your Action Plan</p><p style="margin:0;font-size:14px;color:#2c3e50;line-height:1.7;">' + action_plan + '</p></div></td></tr>' if action_plan else ''}
+
+  {'<!-- Role Insight --><tr><td style="padding:0 24px 16px;"><div style="background:#fef9e7;border-left:5px solid #f39c12;border-radius:8px;padding:16px 20px;"><p style="margin:0 0 6px;font-size:13px;font-weight:bold;color:#d68910;text-transform:uppercase;letter-spacing:1px;">Role Focus Insight</p><p style="margin:0;font-size:14px;color:#2c3e50;line-height:1.7;">' + role_insight + '</p></div></td></tr>' if role_insight else ''}
+
+  {'<!-- Tomorrow Plan --><tr><td style="padding:0 24px 16px;"><div style="background:#eaf4fb;border-left:5px solid #2980b9;border-radius:8px;padding:18px 20px;"><p style="margin:0 0 8px;font-size:13px;font-weight:bold;color:#1a5276;text-transform:uppercase;letter-spacing:1px;">Tomorrow\'s Game Plan</p><p style="margin:0;font-size:14px;color:#2c3e50;line-height:1.7;">' + tomorrow_plan + '</p></div></td></tr>' if tomorrow_plan else ''}
+
+  {'<!-- Strength Spotlight --><tr><td style="padding:0 24px 24px;"><div style="background:linear-gradient(135deg,#1a5276,#6e2f8c);border-radius:10px;padding:18px 24px;"><p style="margin:0 0 8px;font-size:13px;font-weight:bold;color:#aed6f1;text-transform:uppercase;letter-spacing:1px;">Skill to Spotlight Tomorrow</p><p style="margin:0;font-size:14px;color:#fff;line-height:1.7;">' + strength + '</p></div></td></tr>' if strength else ''}
 
 </table>
 <p style='text-align:center;font-size:11px;color:#bbb;margin-top:12px;'>
@@ -795,9 +843,9 @@ def setup_email():
     receiver = input("Receiver email [rajubaddela1234@gmail.com]: ").strip()
     if not receiver:
         receiver = "rajubaddela1234@gmail.com"
-    claude  = input("Claude API Key (leave blank to skip): ").strip()
+    gemini  = input("Gemini API Key (leave blank to skip): ").strip()
     cfg = {"email_sender": sender, "email_password": password,
-           "email_receiver": receiver, "claude_api_key": claude}
+           "email_receiver": receiver, "gemini_api_key": gemini}
     with open(CONFIG, "w") as f:
         json.dump(cfg, f, indent=2)
     print(f"\nConfig saved to {CONFIG}")
@@ -861,18 +909,15 @@ def load_context():
     return {}
 
 def get_day_context():
-    """Returns a plain-English note about today's schedule for the LLM prompt."""
     now  = datetime.now()
     wd   = now.weekday()   # 0=Mon … 6=Sun
     hour = now.hour
-
     on_shift = (
-        (wd == 3 and hour >= 23) or   # Thu after 11 PM
-        (wd == 4 and hour < 11)  or   # Fri before 11 AM  (Thu night shift)
-        (wd == 4 and hour >= 23) or   # Fri after 11 PM
-        (wd == 5 and hour < 11)        # Sat before 11 AM  (Fri night shift)
+        (wd == 3 and hour >= 23) or
+        (wd == 4 and hour < 11)  or
+        (wd == 4 and hour >= 23) or
+        (wd == 5 and hour < 11)
     )
-
     if on_shift:
         return (
             "Raju is currently ON his Amazon Associate night shift (Thu 11PM-Fri 11AM or Fri 11PM-Sat 11AM). "
@@ -880,106 +925,185 @@ def get_day_context():
             "Do NOT pressure him with the full 25-job goal — acknowledge his effort working night shifts while job hunting."
         )
     if wd == 5:
-        return "It is Saturday. Recruiter activity is low on weekends — fewer responses expected. Encourage consistency but quality over quantity."
+        return "It is Saturday. Recruiter activity is low on weekends — fewer responses expected. Encourage quality over quantity."
     if wd == 6:
         return "It is Sunday. Recruiter activity is very low. Encourage Raju to apply to a few high-quality roles and use time to refine resumes."
     return "Normal weekday — Raju should aim for the full 25 applications today."
 
+def _build_gemini_profile():
+    """Build a rich profile string from context.json for the LLM prompt."""
+    ctx = load_context()
+    if not ctx:
+        return ""
+    p   = ctx.get("personal", {})
+    ws  = ctx.get("work_schedule", {})
+    jh  = ctx.get("job_hunt", {})
+    res = ctx.get("resumes", {})
+
+    # Collect skills per role
+    role_skills = []
+    for rkey in ("ai_engineer", "data_analyst", "data_scientist", "ml_engineer"):
+        r = res.get(rkey, {})
+        if r:
+            skills_preview = " | ".join(r.get("skills", [])[:3])
+            role_skills.append(f"  [{r.get('title',rkey)}]: {skills_preview}")
+
+    # Collect all projects with metrics
+    projects = []
+    seen = set()
+    for rkey in ("ai_engineer", "ml_engineer", "data_scientist", "data_analyst"):
+        for proj in res.get(rkey, {}).get("projects", []):
+            name = proj.get("name", "")
+            if name not in seen:
+                seen.add(name)
+                h = proj.get("highlights", [""])
+                projects.append(f"  - {name}: {h[0]}")
+
+    # Collect experience
+    exp_lines = []
+    seen_exp = set()
+    for rkey in ("ai_engineer", "ml_engineer"):
+        for e in res.get(rkey, {}).get("experience", []):
+            key = e.get("company","") + e.get("role","")
+            if key not in seen_exp:
+                seen_exp.add(key)
+                h = " | ".join(e.get("highlights", [])[:2])
+                exp_lines.append(f"  - {e.get('company')} ({e.get('role')}, {e.get('period')}): {h}")
+
+    certs = []
+    for rkey in res:
+        for c in res[rkey].get("certifications", []):
+            if c not in certs:
+                certs.append(c)
+
+    return f"""=== BADDELA RAJU — FULL PROFILE ===
+Personal : {p.get('name')}, {p.get('location')} | {p.get('email')} | {p.get('phone')}
+Education: {p.get('education')}
+Context  : {p.get('context','')}
+
+Target Roles: {' | '.join(jh.get('target_roles', []))}
+Daily Goal  : {jh.get('daily_goal', 25)} applications/day
+
+SKILLS BY ROLE:
+{chr(10).join(role_skills)}
+
+WORK EXPERIENCE:
+{chr(10).join(exp_lines)}
+
+NOTABLE PROJECTS (with real metrics):
+{chr(10).join(projects[:8])}
+
+CERTIFICATIONS: {', '.join(certs[:6])}
+
+AMAZON SHIFT SCHEDULE:
+  {' | '.join(ws.get('amazon_shifts', []))}
+  Note: {ws.get('shift_note','')}
+"""
+
 def generate_llm_content(email_type, applied, roles_data, remaining):
-    """Call Gemini to generate personalised email content. Returns dict or None on failure."""
+    """Call Gemini to generate rich, detailed personalised email content. Returns dict or None."""
     cfg     = load_config()
-    api_key = cfg.get("claude_api_key", "")
+    api_key = cfg.get("gemini_api_key", "")
     if not api_key:
         return None
 
     try:
-        import anthropic
+        import google.generativeai as genai
         import re as _re
     except ImportError:
         return None
 
     day_note = get_day_context()
     date_str = today_display()
-
-    profile = f"""
-ABOUT RAJU:
-  Name      : Baddela Raju
-  Location  : Wimbledon, London, UK
-  Education : MSc Data Science, Roehampton University London (Oct 2024 – Jan 2026, Completed)
-  Roles     : AI/Generative AI Engineer | Data Analyst | Data Scientist | ML Engineer
-  Daily goal: {GOAL} applications
-  Key skills: LangChain, LangGraph, QLoRA, RAG, Agentic AI, MCP, MLOps, AWS, PyTorch,
-              Power BI, Python, Docker, GitHub Actions CI/CD, LLM Fine-Tuning (SFT/LoRA/DPO),
-              RAGAS, FAISS, FastAPI, XGBoost, Scikit-Learn
-  Experience: KPMG Data Analytics Intern; iNeuron Generative AI Engineer Intern
-  Projects  : Agentic AI Video Synthesizer (8-agent LangGraph), QLoRA LLM Fine-Tuning pipeline,
-              Multimodal MCP Research Assistant, Credit Card Fraud Detection (AWS CI/CD),
-              Diamond Price Prediction (MLflow + Azure), TCS LSTM Stock Forecasting
-  Context   : Recent MSc graduate, job hunting in competitive London AI market.
-              Works Amazon Associate night shifts to support himself financially while job hunting.
-              Highly skilled, ambitious, and determined.
-"""
+    profile  = _build_gemini_profile()
 
     progress = f"""
-TODAY: {date_str}
-SCHEDULE: {day_note}
-APPLICATIONS: {applied}/{GOAL} done, {remaining} remaining
-  AI/Generative AI Engineer : {roles_data.get('ai', 0)}
-  Data Analyst              : {roles_data.get('da', 0)}
-  Data Scientist            : {roles_data.get('ds', 0)}
-  ML Engineer               : {roles_data.get('ml', 0)}
+=== TODAY'S STATUS ===
+Date     : {date_str}
+Schedule : {day_note}
+Progress : {applied}/{GOAL} applications done, {remaining} remaining
+  AI / Generative AI Engineer : {roles_data.get('ai', 0)}
+  Data Analyst                : {roles_data.get('da', 0)}
+  Data Scientist              : {roles_data.get('ds', 0)}
+  ML Engineer                 : {roles_data.get('ml', 0)}
 """
 
     if email_type == "morning":
-        instruction = """Write a MORNING MOTIVATION email.
-Return ONLY valid JSON (no markdown, no extra text):
-{
-  "headline": "punchy headline 5-8 words — no emoji",
-  "body": "2-3 sentences — personal, references his specific skills (LangGraph/QLoRA/RAG), acknowledges today schedule, energetic coach tone"
-}"""
+        instruction = f"""You are Raju's deeply personal AI job hunt coach. Write a MORNING MOTIVATION email.
+Use his REAL skills and projects naturally — LangGraph, QLoRA, RAG, MLflow, Power BI, YOLOv8, LSTM etc.
+Make him feel his expertise is genuinely rare in London's AI market.
+Acknowledge today's schedule context if relevant.
+
+Return ONLY valid JSON — no markdown fences, no extra text:
+{{
+  "headline": "punchy unique headline 5-8 words capturing today's energy — no emoji",
+  "body": "4-5 sentences — energetic personal coach tone, references at least 2 of his specific projects or skills by name, connects his background to real London market demand, makes him excited to open his laptop and apply",
+  "strategy": "2-3 sentences — specific tactical advice for today: which role combination to hit first given his background, what types of companies or JD keywords to prioritise (e.g. startups with LangChain/RAG stacks, fintech with XGBoost/MLflow, analytics teams wanting Power BI + SQL)",
+  "affirmation": "One powerful 12-18 word affirmation written specifically for Raju — references his name or his real skills"
+}}"""
 
     elif email_type == "check":
         if applied >= GOAL:
-            tone = "celebratory — goal crushed!"
+            tone = "celebratory and proud — he crushed the goal"
         elif applied >= 15:
-            tone = "encouraging — almost there, push to finish"
+            tone = "encouraging and energetic — almost there, one last push will finish it"
         elif applied >= 5:
-            tone = "urgent but understanding — big afternoon push needed"
+            tone = "urgent but not harsh — a strong afternoon sprint will save the day"
         else:
-            tone = "firm and motivating — unless on Amazon shift, then understanding"
-        instruction = f"""Write a PROGRESS CHECK email. Tone: {tone}
-Return ONLY valid JSON (no markdown, no extra text):
+            tone = "firm, direct, caring — unless on Amazon shift (then understanding and supportive)"
+
+        weakest_role = min(roles_data, key=lambda r: roles_data.get(r, 0))
+        weakest_label = ROLES.get(weakest_role, weakest_role)
+
+        instruction = f"""You are Raju's personal AI job hunt coach. Write a PROGRESS CHECK email.
+Tone: {tone}
+Current weakest role by count: {weakest_label} ({roles_data.get(weakest_role, 0)} applications)
+
+Return ONLY valid JSON — no markdown fences, no extra text:
 {{
-  "headline": "headline reflecting current progress {applied}/{GOAL} — no emoji",
-  "body": "2-3 sentences — acknowledge exact numbers, reference schedule if relevant, push to finish or celebrate"
+  "headline": "headline reflecting exact progress {applied}/{GOAL} — honest, no emoji",
+  "body": "4-5 sentences — acknowledge exact numbers for each role, reference today's schedule if relevant, be specific about what's been achieved and what gap remains, tone matches above",
+  "action_plan": "2-3 sentences — concrete next-2-hours plan: specific role to focus on, specific type of company to target given his skills, realistic target number to hit before end of day",
+  "role_insight": "1-2 sentences — point out which role is lagging ({weakest_label} at {roles_data.get(weakest_role, 0)}) and why it matters for his profile to have balanced coverage"
 }}"""
 
-    else:  # midnight / end of day
-        instruction = f"""Write an END OF DAY summary message.
-Return ONLY valid JSON (no markdown, no extra text):
+    else:  # midnight
+        if applied >= GOAL:
+            tone = "celebratory, proud, set up for tomorrow"
+        elif applied >= 15:
+            tone = "positive but honest — good day, close to goal, tomorrow go further"
+        elif applied >= 5:
+            tone = "honest and constructive — below target, acknowledge why, clear tomorrow plan"
+        else:
+            tone = "honest, caring, no harsh judgement — reset and rebuild tomorrow (consider Amazon shift)"
+
+        instruction = f"""You are Raju's personal AI job hunt coach. Write an END OF DAY SUMMARY email.
+Tone: {tone}
+Be honest about {applied}/{GOAL} — don't sugarcoat but don't crush either.
+
+Return ONLY valid JSON — no markdown fences, no extra text:
 {{
   "headline": "honest end-of-day headline for {applied}/{GOAL} — no emoji",
-  "body": "2-3 sentences — honest reflection on {applied}/{GOAL}, acknowledge Amazon shift or weekend if applicable, motivate for tomorrow"
+  "body": "4-5 sentences — reflect on today's full picture ({applied} total, role breakdown), acknowledge Amazon shift or weekend if context says so, celebrate wins even if small, be real about shortfall",
+  "tomorrow_plan": "2-3 sentences — specific actionable plan for tomorrow: start time, which roles to hit first, a concrete number target per role to reach {GOAL} total",
+  "strength": "1-2 sentences — one specific skill or project from his CV to highlight MORE in tomorrow's applications (e.g. his Agentic AI Video Synthesizer for AI roles, or KPMG Tableau dashboard for DA roles) and why recruiters will respond to it"
 }}"""
 
     prompt = (
-        "You are Raju's personal AI job hunt coach who knows him deeply.\n"
+        "You are Raju's deeply personal AI job hunt coach with full knowledge of his background.\n\n"
         f"{profile}\n{progress}\n{instruction}"
     )
 
     try:
-        client   = anthropic.Anthropic(api_key=api_key)
-        message  = client.messages.create(
-            model      = "claude-haiku-4-5-20251001",
-            max_tokens = 400,
-            messages   = [{"role": "user", "content": prompt}]
-        )
-        text  = message.content[0].text.strip()
-        match = _re.search(r'\{[\s\S]*\}', text)
+        genai.configure(api_key=api_key)
+        model    = genai.GenerativeModel("gemini-1.5-flash")
+        response = model.generate_content(prompt)
+        text     = response.text.strip()
+        match    = _re.search(r'\{[\s\S]*\}', text)
         if match:
             return json.loads(match.group())
     except Exception as e:
-        print(f"Claude error: {e}")
+        print(f"Gemini error: {e}")
 
     return None
 

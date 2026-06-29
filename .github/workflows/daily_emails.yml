@@ -27,7 +27,7 @@ jobs:
       EMAIL_SENDER:   ${{ secrets.EMAIL_SENDER }}
       EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
       EMAIL_RECEIVER: ${{ secrets.EMAIL_RECEIVER }}
-      CLAUDE_API_KEY: ${{ secrets.CLAUDE_API_KEY }}
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
 
     steps:
       - name: Checkout repo
