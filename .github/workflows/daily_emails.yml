@@ -1,0 +1,56 @@
+name: Resume Tracker — Daily Emails
+
+# All times UK BST (UTC+1) — update to GMT (UTC+0) in winter
+# 07:00 BST → morning motivation
+# 10:00 BST → progress check
+# 13:00 BST → progress check
+# 16:00 BST → progress check
+# 19:00 BST → progress check
+# 22:00 BST → progress check
+# 00:00 BST → midnight final summary
+
+on:
+  schedule:
+    - cron: '0 6  * * *'   # 07:00 BST (06:00 UTC)
+    - cron: '0 9  * * *'   # 10:00 BST (09:00 UTC)
+    - cron: '0 12 * * *'   # 13:00 BST (12:00 UTC)
+    - cron: '0 15 * * *'   # 16:00 BST (15:00 UTC)
+    - cron: '0 18 * * *'   # 19:00 BST (18:00 UTC)
+    - cron: '0 21 * * *'   # 22:00 BST (21:00 UTC)
+    - cron: '0 23 * * *'   # 00:00 BST next day (23:00 UTC)
+  workflow_dispatch:
+
+jobs:
+  send-email:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 7 AM — Morning motivation
+        if: >-
+          github.event.schedule == '0 6  * * *' ||
+          github.event_name == 'workflow_dispatch'
+        run: python resume_tracker.py morning
+
+      - name: 10 AM / 1 PM / 4 PM / 7 PM / 10 PM — Progress check
+        if: >-
+          github.event.schedule == '0 9  * * *' ||
+          github.event.schedule == '0 12 * * *' ||
+          github.event.schedule == '0 15 * * *' ||
+          github.event.schedule == '0 18 * * *' ||
+          github.event.schedule == '0 21 * * *' ||
+          github.event_name == 'workflow_dispatch'
+        run: python resume_tracker.py check
+
+      - name: 12 AM — Midnight final summary
+        if: >-
+          github.event.schedule == '0 23 * * *' ||
+          github.event_name == 'workflow_dispatch'
+        run: python resume_tracker.py midnight
