@@ -1,54 +1,83 @@
 import json
 import os
 import random
+import re
 import subprocess
 import smtplib
 import sys
 import time
+from datetime import datetime
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from datetime import datetime
+from zoneinfo import ZoneInfo
 
-BASE = os.path.dirname(os.path.abspath(__file__))
+BASE      = os.path.dirname(os.path.abspath(__file__))   # Resume/
+SCAN_ROOT = os.path.dirname(BASE)                         # parent dir — drop .docx files here
 JOB_LOG   = os.path.join(BASE, "job_log.json")
 CONFIG    = os.path.join(BASE, "tracker_config.json")
 GOAL      = 25
 SCAN_LOG  = os.path.join(BASE, "scanned_files.json")
+UK_TZ     = ZoneInfo("Europe/London")
 
 # Keywords to classify role from filename (checked in order)
 ROLE_KEYWORDS = {
     "da": ["data_analyst", "dataanalyst", "labour_model", "labourmodel",
-           "data_transformation_analyst", "excel_data"],
+           "data_transformation_analyst", "excel_data",
+           "pricing_analyst", "market_pricing", "collections_analyst",
+           "planning_analyst", "business_analyst", "insight_analyst",
+           "operations_analyst", "commercial_analyst", "risk_analyst",
+           "graduate_analyst", "junior_analyst"],
     "ds": ["data_scientist", "datascientist", "data_science", "datascience",
-           "ds_ai", "_ds_", "quant_research", "quant_analyst"],
+           "ds_ai", "_ds_", "quant_research", "quant_analyst",
+           "applied_scientist", "research_scientist", "junior_research_scientist",
+           "ml_evaluation"],
     "ml": ["ml_engineer", "ml_researcher", "ml_scientist", "applied_ml", "founding_ml",
-           "deep_learning", "nlp_engineer", "computer_vision"],
+           "deep_learning", "nlp_engineer", "computer_vision",
+           "ml_research"],
     "ai": [
         "ai_engineer", "ai_developer", "ai_devloper", "ai_builder", "ai_specialist",
         "ai_solutions", "ai_creative", "ai_qa", "ai_researcher", "ai_research",
         "ai_platform", "ai_associate", "ai_operations", "ai_data", "applied_ai",
         "agentic_ai", "agenticai", "llm_engineer", "rag_engineer", "graduate_ai",
-        "trainee_ai", "aiml_engineer", "forward_deployed_ai", "generative_ai",
-        "ml_evaluation", "mle_agentic", "ai_intern", "numi_ai",
+        "trainee_ai", "aiml_engineer", "aiml", "forward_deployed_ai", "generative_ai",
+        "mle_agentic", "ai_intern", "numi_ai",
         "ai_architect", "ai_software", "ai_security", "ai_product", "ai_strategy",
         "datascience_specialist", "data_science_specialist",
         "software_ai", "founding_ai", "junior_ai", "senior_ai",
         "aiengineer", "aiengineering", "founding_engineer",
+        # Extended AI keywords
+        "gen_ai", "genai", "forward_deployed", "ai_analyst", "ai_automation",
+        "ai_search", "solutions_architect", "ai_forward", "ai_consultant",
+        "ai_pioneer", "ai_lead", "ai_principal", "ai_director",
+    ],
+    "se": [
+        "software_engineer", "software_developer", "swengineer", "swe",
+        "python_engineer", "python_software", "python_developer",
+        "grad_swe", "graduate_software", "graduate_swe", "grad_se",
+        "software_dev", "full_stack", "fullstack", "backend_engineer",
+        "backend_developer", "graduate_se", "graduate_developer",
+        "junior_developer", "junior_software", "junior_engineer",
+        "analytics_developer", "cloud_ops", "cloudops",
+        "graduate_swd", "software_graduate", "swd",
     ],
 }
 MLE_PATTERN = ["_mle", "mle_", "mle."]   # standalone MLE files → ml
+
+# Cover-letter filename markers — not counted as applications
+COVER_PATTERNS = ["cover_letter", "coverletter", "cover_ltr", "_cl_", "cl_resume"]
 
 ROLES = {
     "ai": "AI / Generative AI Engineer",
     "da": "Data Analyst",
     "ds": "Data Scientist",
     "ml": "Machine Learning Engineer",
+    "se": "Software / Other Engineer",
 }
 
 MOTIVATIONS = [
     "Every application is a vote for your future. Cast 25 votes today!",
     "25 jobs/day = 175/week. Your dream role is in that pile — find it!",
-    "You have 4 killer resumes. Each JD is a puzzle — YOU are the answer!",
+    "You have 5 powerful resumes. Each JD is a puzzle — YOU are the answer!",
     "Top candidates don't wait to be discovered — they show up 25 times a day!",
     "Rejection is just redirection. Your YES is out there — keep sending!",
     "The only resume that never gets a call is the one never sent. Send 25!",
@@ -94,6 +123,18 @@ MORNING_MOTIVATIONS = [
     ("Good Morning, Champion",         "The sun rose. So did you. The job market is open. Your skills are sharp. Your goal is 25. Today is YOUR day — own it.",                     "#1a5276"),
 ]
 
+# ─── UK time helpers ─────────────────────────────────────────────────────────
+
+def now_uk():
+    """Always return current UK time (BST in summer, GMT in winter)."""
+    return datetime.now(UK_TZ)
+
+def today():
+    return now_uk().strftime("%Y-%m-%d")
+
+def today_display():
+    return now_uk().strftime("%A, %d %B %Y")
+
 # ─── Data helpers ────────────────────────────────────────────────────────────
 
 def load_log():
@@ -123,12 +164,6 @@ def load_config():
             cfg[cfg_key] = val
     return cfg
 
-def today():
-    return datetime.now().strftime("%Y-%m-%d")
-
-def today_display():
-    return datetime.now().strftime("%A, %d %B %Y")
-
 def get_today_data():
     log = load_log()
     entry = log.get(today(), {})
@@ -150,16 +185,27 @@ def add_application(role_key, n=1):
     save_log(log)
     return log[t]
 
+def _normalize_fname(filename):
+    """Lowercase + underscore, handling CamelCase (AppliedAI → applied_ai)."""
+    name = re.sub(r'(?<=[a-z])(?=[A-Z])', '_', filename)
+    return name.lower().replace("-", "_").replace(" ", "_")
+
 def classify_role(filename):
-    name = filename.lower().replace("-", "_").replace(" ", "_")
-    for role in ("da", "ds", "ai", "ml"):
+    name = _normalize_fname(filename)
+    # Cover letters are not standalone applications
+    for pat in COVER_PATTERNS:
+        if pat in name:
+            return "other"
+    # Role keyword matching
+    for role in ("da", "ds", "ai", "ml", "se"):
         for kw in ROLE_KEYWORDS[role]:
             if kw in name:
                 return role
     for kw in MLE_PATTERN:
         if kw in name:
             return "ml"
-    return "other"
+    # Any remaining .docx that isn't a cover letter counts as software/other
+    return "se"
 
 def load_scan_log():
     if os.path.exists(SCAN_LOG):
@@ -180,23 +226,34 @@ def add_application_for_date(date_str, role_key, n=1):
     save_log(log)
 
 def scan_and_log():
+    """Walk SCAN_ROOT (parent dir), classify .docx files and log them.
+    Skips the Resume/ subdir (tracker files). Re-classifies previously 'other' entries.
+    """
     scan_log  = load_scan_log()
     new_files = []
     unknown   = []
 
-    for root, dirs, files in os.walk(BASE):
-        dirs[:] = [d for d in dirs if not d.startswith('.')]
+    for root, dirs, files in os.walk(SCAN_ROOT):
+        # Skip hidden dirs and the Resume/ subdir itself
+        dirs[:] = [
+            d for d in dirs
+            if not d.startswith('.')
+            and os.path.normcase(os.path.abspath(os.path.join(root, d))) !=
+               os.path.normcase(os.path.abspath(BASE))
+        ]
         for fname in files:
             if not fname.lower().endswith('.docx'):
                 continue
             fpath    = os.path.join(root, fname)
-            rel_path = os.path.relpath(fpath, BASE)
-            if rel_path in scan_log:
+            rel_path = os.path.relpath(fpath, SCAN_ROOT)
+
+            # Skip files already properly classified (not "other")
+            if rel_path in scan_log and scan_log[rel_path].get("role") != "other":
                 continue
 
-            role = classify_role(fname)
+            role      = classify_role(fname)
             mtime     = os.path.getmtime(fpath)
-            file_date = datetime.fromtimestamp(mtime).strftime("%Y-%m-%d")
+            file_date = datetime.fromtimestamp(mtime, tz=UK_TZ).strftime("%Y-%m-%d")
 
             scan_log[rel_path] = {"role": role, "date": file_date}
 
@@ -204,6 +261,7 @@ def scan_and_log():
                 unknown.append(rel_path)
                 continue
 
+            # Check if this file was previously "other" (reclassified now)
             add_application_for_date(file_date, role)
             new_files.append((rel_path, role, file_date))
 
@@ -213,7 +271,8 @@ def scan_and_log():
     role_counts = {r: 0 for r in ROLES}
     date_counts = {}
     for _, role, date in new_files:
-        role_counts[role] += 1
+        if role in role_counts:
+            role_counts[role] += 1
         date_counts[date] = date_counts.get(date, 0) + 1
 
     print(f"\n{'='*60}")
@@ -222,17 +281,17 @@ def scan_and_log():
     if new_files:
         print(f"\n  By Role:")
         for key, label in ROLES.items():
-            if role_counts[key]:
+            if role_counts.get(key, 0):
                 print(f"    {label:<35}: {role_counts[key]}")
         print(f"\n  By Date (most recent 5):")
         for date in sorted(date_counts)[-5:]:
             print(f"    {date}: {date_counts[date]} applications")
     if unknown:
-        print(f"\n  Other / Unclassified ({len(unknown)}):")
+        print(f"\n  Cover Letters / Unclassified ({len(unknown)} — not counted):")
         for p in unknown[:8]:
             print(f"    {os.path.basename(p)}")
         if len(unknown) > 8:
-            print(f"    ... and {len(unknown)-8} more (see scanned_files.json for full list)")
+            print(f"    ... and {len(unknown)-8} more")
     print(f"{'='*60}\n")
 
     if new_files:
@@ -240,9 +299,9 @@ def scan_and_log():
     return new_files
 
 def auto_push_log():
-    """Silently commit and push job_log.json so GitHub Actions midday check sees latest data."""
+    """Silently commit and push job_log.json so GitHub Actions sees latest data."""
     try:
-        subprocess.run(["git", "add", JOB_LOG, SCAN_LOG], capture_output=True, cwd=BASE)
+        subprocess.run(["git", "add", JOB_LOG], capture_output=True, cwd=BASE)
         result = subprocess.run(
             ["git", "commit", "-m", f"log: applications {today()}"],
             capture_output=True, cwd=BASE
@@ -305,7 +364,6 @@ def build_morning_html():
     )
 
     strategy_block = f"""
-  <!-- Today's Strategy -->
   <tr><td style='padding:0 28px 20px;'>
     <div style='background:#eaf4fb;border-left:5px solid #2980b9;border-radius:8px;padding:18px 20px;'>
       <p style='margin:0 0 8px;font-size:14px;font-weight:bold;color:#1a5276;
@@ -315,7 +373,6 @@ def build_morning_html():
   </td></tr>""" if strategy else ""
 
     affirmation_block = f"""
-  <!-- Affirmation -->
   <tr><td style='padding:0 28px 24px;'>
     <div style='background:linear-gradient(135deg,#1a5276,#6e2f8c);border-radius:10px;
                 padding:18px 24px;text-align:center;'>
@@ -334,33 +391,29 @@ def build_morning_html():
        style='max-width:600px;margin:30px auto;background:#fff;border-radius:12px;
               overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.12);'>
 
-  <!-- Header -->
   <tr><td style='background:{color};padding:36px 24px;text-align:center;'>
     <p style='color:#aed6f1;margin:0 0 6px;font-size:13px;letter-spacing:2px;text-transform:uppercase;'>
-      Good Morning, Raju · {date_str}
+      Good Morning, Raju &middot; {date_str}
     </p>
     <h1 style='color:#fff;margin:0;font-size:26px;line-height:1.3;'>{headline}</h1>
   </td></tr>
 
-  <!-- Motivation body -->
   <tr><td style='padding:28px 28px 16px;'>
     <p style='font-size:16px;color:#2c3e50;line-height:1.8;margin:0;'>{body}</p>
   </td></tr>
 
   {strategy_block}
 
-  <!-- Daily goal banner -->
   <tr><td style='padding:4px 28px 20px;'>
     <div style='background:linear-gradient(135deg,{color},#2980b9);border-radius:10px;
                 padding:20px;text-align:center;'>
       <p style='color:#fff;margin:0;font-size:26px;font-weight:bold;'>TODAY'S GOAL: {GOAL} APPLICATIONS</p>
-      <p style='color:#d6eaf8;margin:6px 0 0;font-size:14px;'>Across 4 roles — AI · DA · DS · ML</p>
+      <p style='color:#d6eaf8;margin:6px 0 0;font-size:14px;'>Across 5 roles — AI &middot; DA &middot; DS &middot; ML &middot; SE</p>
     </div>
   </td></tr>
 
-  <!-- Role targets -->
   <tr><td style='padding:0 28px 20px;'>
-    <p style='margin:0 0 10px;font-size:15px;font-weight:bold;color:#2c3e50;'>Apply across all 4 roles today:</p>
+    <p style='margin:0 0 10px;font-size:15px;font-weight:bold;color:#2c3e50;'>Apply across all 5 roles today:</p>
     <ul style='margin:0;padding-left:20px;'>
       {roles_list}
     </ul>
@@ -370,7 +423,7 @@ def build_morning_html():
 
 </table>
 <p style='text-align:center;font-size:11px;color:#bbb;margin-top:12px;'>
-  Job Application Tracker · Baddela Raju · {date_str}
+  Job Application Tracker &middot; Baddela Raju &middot; {date_str}
 </p>
 </body></html>
 """
@@ -382,68 +435,59 @@ def build_midday_html(applied, roles_data, label_time="12:00 PM"):
     bar_color = "#27ae60" if is_goal else "#e67e22" if pct >= 50 else "#e74c3c"
     date_str  = today_display()
 
-    # ── Header ──────────────────────────────────────────────
     if is_goal:
         header_bg  = "#145a32"
-        header_txt = f"🏆 GOAL CRUSHED — {applied}/{GOAL} by Noon!"
-        sub_txt    = "You hit the daily target before noon — extraordinary!"
+        header_txt = f"GOAL CRUSHED — {applied}/{GOAL} by {label_time}!"
+        sub_txt    = "You hit the daily target — extraordinary!"
     elif applied >= 15:
         header_bg  = "#1a5276"
-        header_txt = f"🔥 {applied}/{GOAL} Done — Strong Morning!"
-        sub_txt    = f"12:00 PM Summary · {date_str}"
+        header_txt = f"{applied}/{GOAL} Done — Strong Morning!"
+        sub_txt    = f"{label_time} Summary · {date_str}"
     elif applied >= 5:
         header_bg  = "#784212"
-        header_txt = f"⚠️ {applied}/{GOAL} Done — Afternoon Push Needed"
-        sub_txt    = f"12:00 PM Summary · {date_str}"
+        header_txt = f"{applied}/{GOAL} Done — Push Needed"
+        sub_txt    = f"{label_time} Summary · {date_str}"
     else:
         header_bg  = "#922b21"
-        header_txt = f"🚨 {applied}/{GOAL} — Noon Alert!"
-        sub_txt    = f"Day is half gone · {date_str}"
+        header_txt = f"{applied}/{GOAL} — Alert!"
+        sub_txt    = f"Day half gone · {date_str}"
 
-    # ── Tiered ending message (hardcoded defaults) ───────────────
     if is_goal:
         end_color = "#27ae60"
-        end_icon  = "trophy"
         end_title = "Morning Champion — Goal Achieved!"
         end_body  = (
-            f"You applied to <b>{applied} jobs</b> and crushed your daily goal of {GOAL} before noon. "
+            f"You applied to <b>{applied} jobs</b> and crushed your daily goal of {GOAL}. "
             "That level of discipline is exactly what separates people who land jobs from people who don't. "
-            "Take a short break — you've absolutely earned it. Carry this same energy into tomorrow!"
+            "Take a short break — you've absolutely earned it."
         )
     elif applied >= 15:
         end_color = "#e67e22"
-        end_icon  = "fire"
-        end_title = "Great Morning — Finish It This Afternoon!"
+        end_title = "Great Progress — Finish It This Afternoon!"
         end_body  = (
-            f"<b>{applied} applications</b> done — you're on a great track! "
-            f"Just <b>{remaining} more</b> to hit your daily goal. "
-            "Block one focused hour, power through, and end today knowing you gave it everything."
+            f"<b>{applied} applications</b> done! Just <b>{remaining} more</b> to hit your daily goal. "
+            "Block one focused hour and power through."
         )
     elif applied >= 5:
         end_color = "#c0392b"
-        end_icon  = "clock"
-        end_title = "Push Hard This Afternoon!"
+        end_title = "Push Hard!"
         end_body  = (
             f"You have <b>{applied} applications</b> so far. You need <b>{remaining} more</b> "
-            "to hit your goal — close every distraction and apply non-stop for the next 2 hours."
+            "to hit your goal — close every distraction and apply non-stop."
         )
     else:
         end_color = "#922b21"
-        end_icon  = "alert"
         end_title = "Urgent — The Clock Is Running. Act NOW!"
         end_body  = (
             f"<b>{'Zero' if applied == 0 else str(applied)} applications</b> so far, Raju. "
-            "Your dream job will not find you — you have to chase it. "
-            "Set a 60-minute timer and apply to at least 15 jobs right now."
+            "Your dream job will not find you. Set a 60-minute timer and apply to at least 15 jobs right now."
         )
 
-    # ── Override with LLM personalised content if available ──────
-    email_kind  = "midnight" if label_time == "12:00 AM" else "check"
-    llm         = generate_llm_content(email_kind, applied, roles_data, remaining)
-    action_plan = ""
-    role_insight= ""
+    email_kind    = "midnight" if label_time == "12:00 AM" else "check"
+    llm           = generate_llm_content(email_kind, applied, roles_data, remaining)
+    action_plan   = ""
+    role_insight  = ""
     tomorrow_plan = ""
-    strength    = ""
+    strength      = ""
     if llm:
         end_title     = llm.get("headline", end_title)
         end_body      = llm.get("body", end_body)
@@ -452,7 +496,6 @@ def build_midday_html(applied, roles_data, label_time="12:00 PM"):
         tomorrow_plan = llm.get("tomorrow_plan", "")
         strength      = llm.get("strength", "")
 
-    # ── Pre-build extra LLM blocks (avoids backslash-in-f-string on Python < 3.12) ──
     action_plan_block = (
         "<tr><td style='padding:0 24px 16px;'>"
         "<div style='background:#eafaf1;border-left:5px solid #27ae60;border-radius:8px;padding:18px 20px;'>"
@@ -489,16 +532,14 @@ def build_midday_html(applied, roles_data, label_time="12:00 PM"):
         "</div></td></tr>"
     ) if strength else ""
 
-    # ── Role rows ────────────────────────────────────────────
     roles_rows = ""
     for key, label in ROLES.items():
         count = roles_data.get(key, 0)
-        roles_rows += f"""
-        <tr>
-          <td style='padding:10px 16px;border-bottom:1px solid #eee;'>{label}</td>
-          <td style='padding:10px 16px;border-bottom:1px solid #eee;text-align:center;
-                     font-weight:bold;color:#2c3e50;'>{count}</td>
-        </tr>"""
+        roles_rows += (
+            f"<tr><td style='padding:10px 16px;border-bottom:1px solid #eee;'>{label}</td>"
+            f"<td style='padding:10px 16px;border-bottom:1px solid #eee;text-align:center;"
+            f"font-weight:bold;color:#2c3e50;'>{count}</td></tr>"
+        )
 
     return f"""
 <!DOCTYPE html>
@@ -509,16 +550,14 @@ def build_midday_html(applied, roles_data, label_time="12:00 PM"):
        style='max-width:600px;margin:30px auto;background:#fff;border-radius:12px;
               overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.1);'>
 
-  <!-- Header -->
   <tr><td style='background:{header_bg};padding:30px 24px;text-align:center;'>
     <p style='color:#aed6f1;margin:0 0 6px;font-size:12px;letter-spacing:2px;text-transform:uppercase;'>
-      {label_time} · Daily Summary
+      {label_time} &middot; Daily Summary
     </p>
     <h1 style='color:#fff;margin:0;font-size:22px;'>{header_txt}</h1>
     <p style='color:#aed6f1;margin:8px 0 0;font-size:14px;'>{sub_txt}</p>
   </td></tr>
 
-  <!-- Progress bar -->
   <tr><td style='padding:24px 24px 10px;'>
     <p style='margin:0 0 8px;font-size:14px;color:#7f8c8d;'>Daily Progress</p>
     <div style='background:#ecf0f1;border-radius:50px;height:22px;overflow:hidden;'>
@@ -526,11 +565,10 @@ def build_midday_html(applied, roles_data, label_time="12:00 PM"):
     </div>
     <p style='margin:8px 0 0;font-size:13px;color:{bar_color};font-weight:bold;'>
       {applied}/{GOAL} applied ({pct}%)
-      {" — GOAL MET! 🎉" if is_goal else f" — {remaining} more to reach your goal"}
+      {" — GOAL MET!" if is_goal else f" — {remaining} more to reach your goal"}
     </p>
   </td></tr>
 
-  <!-- Role breakdown -->
   <tr><td style='padding:10px 24px 20px;'>
     <p style='margin:0 0 10px;font-size:15px;font-weight:bold;color:#2c3e50;'>Applications by Role</p>
     <table width='100%' style='border-collapse:collapse;border-radius:8px;overflow:hidden;border:1px solid #eee;'>
@@ -546,12 +584,11 @@ def build_midday_html(applied, roles_data, label_time="12:00 PM"):
     </table>
   </td></tr>
 
-  <!-- Ending message -->
   <tr><td style='padding:4px 24px 16px;'>
     <div style='background:{end_color}18;border-left:5px solid {end_color};
                 border-radius:8px;padding:22px;'>
       <p style='margin:0 0 10px;font-size:19px;font-weight:bold;color:{end_color};'>
-        {end_icon} {end_title}
+        {end_title}
       </p>
       <p style='margin:0;font-size:15px;color:#2c3e50;line-height:1.8;'>
         {end_body}
@@ -566,7 +603,7 @@ def build_midday_html(applied, roles_data, label_time="12:00 PM"):
 
 </table>
 <p style='text-align:center;font-size:11px;color:#bbb;margin-top:12px;'>
-  Job Application Tracker · Baddela Raju · {date_str}
+  Job Application Tracker &middot; Baddela Raju &middot; {date_str}
 </p>
 </body></html>
 """
@@ -576,57 +613,58 @@ def build_html(applied, goal, roles_data, is_goal_met):
     pct        = min(100, int(applied / goal * 100))
     bar_color  = "#27ae60" if is_goal_met else "#e67e22" if pct >= 50 else "#e74c3c"
     motivation = random.choice(MOTIVATIONS)
-    now_str    = datetime.now().strftime("%I:%M %p")
+    now_str    = now_uk().strftime("%I:%M %p")
     date_str   = today_display()
 
     if is_goal_met:
         header_bg  = "#1a5276"
-        header_txt = f"🎉 GOAL CRUSHED — {applied}/{goal} Applications Today!"
+        header_txt = f"GOAL CRUSHED — {applied}/{goal} Applications Today!"
         sub_txt    = "You're an absolute machine. Your dream job is getting closer!"
-        cta        = "<p style='font-size:18px;color:#27ae60;font-weight:bold;'>🏆 OUTSTANDING WORK TODAY! Keep this momentum tomorrow!</p>"
+        cta        = "<p style='font-size:18px;color:#27ae60;font-weight:bold;'>OUTSTANDING WORK TODAY! Keep this momentum tomorrow!</p>"
     elif applied == 0:
         header_bg  = "#922b21"
-        header_txt = f"⚠️ 0/{goal} Applications — Day Not Started!"
+        header_txt = f"0/{goal} Applications — Day Not Started!"
         sub_txt    = "Get started RIGHT NOW. Every hour counts!"
-        cta        = f"<p style='font-size:16px;color:#e74c3c;font-weight:bold;'>🔥 {motivation}</p>"
+        cta        = f"<p style='font-size:16px;color:#e74c3c;font-weight:bold;'>{motivation}</p>"
     else:
         header_bg  = "#1a5276"
-        header_txt = f"📋 {applied}/{goal} Applications Today — {remaining} More Needed!"
-        sub_txt    = f"As of {now_str} on {date_str}"
-        cta        = f"<p style='font-size:15px;color:#e67e22;font-weight:bold;'>💪 {motivation}</p>"
+        header_txt = f"{applied}/{goal} Applications Today — {remaining} More Needed!"
+        sub_txt    = f"As of {now_str} UK time on {date_str}"
+        cta        = f"<p style='font-size:15px;color:#e67e22;font-weight:bold;'>{motivation}</p>"
 
     roles_rows = ""
     for key, label in ROLES.items():
         count = roles_data.get(key, 0)
-        roles_rows += f"""
-        <tr>
-          <td style='padding:10px 16px;border-bottom:1px solid #eee;'>{label}</td>
-          <td style='padding:10px 16px;border-bottom:1px solid #eee;text-align:center;font-weight:bold;color:#2c3e50;'>{count}</td>
-        </tr>"""
+        roles_rows += (
+            f"<tr><td style='padding:10px 16px;border-bottom:1px solid #eee;'>{label}</td>"
+            f"<td style='padding:10px 16px;border-bottom:1px solid #eee;text-align:center;"
+            f"font-weight:bold;color:#2c3e50;'>{count}</td></tr>"
+        )
 
     return f"""
 <!DOCTYPE html>
 <html>
 <head><meta charset='UTF-8'></head>
 <body style='margin:0;padding:0;background:#f0f3f7;font-family:Arial,sans-serif;'>
-<table width='100%' cellpadding='0' cellspacing='0' style='max-width:600px;margin:30px auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.1);'>
+<table width='100%' cellpadding='0' cellspacing='0'
+       style='max-width:600px;margin:30px auto;background:#fff;border-radius:12px;
+              overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.1);'>
 
-  <!-- Header -->
   <tr><td style='background:{header_bg};padding:30px 24px;text-align:center;'>
     <h1 style='color:#fff;margin:0;font-size:22px;'>{header_txt}</h1>
     <p style='color:#aed6f1;margin:8px 0 0;font-size:14px;'>{sub_txt}</p>
   </td></tr>
 
-  <!-- Progress bar -->
   <tr><td style='padding:24px 24px 10px;'>
     <p style='margin:0 0 8px;font-size:14px;color:#7f8c8d;'>Daily Progress</p>
     <div style='background:#ecf0f1;border-radius:50px;height:22px;overflow:hidden;'>
       <div style='width:{pct}%;background:{bar_color};height:100%;border-radius:50px;transition:width 0.5s;'></div>
     </div>
-    <p style='margin:8px 0 0;font-size:13px;color:{bar_color};font-weight:bold;'>{applied}/{goal} applied &nbsp;({pct}%){" — GOAL MET! 🎉" if is_goal_met else f" — {remaining} more to go"}</p>
+    <p style='margin:8px 0 0;font-size:13px;color:{bar_color};font-weight:bold;'>
+      {applied}/{goal} applied &nbsp;({pct}%){" — GOAL MET!" if is_goal_met else f" — {remaining} more to go"}
+    </p>
   </td></tr>
 
-  <!-- Role breakdown -->
   <tr><td style='padding:10px 24px 20px;'>
     <p style='margin:0 0 10px;font-size:15px;font-weight:bold;color:#2c3e50;'>Applications by Role</p>
     <table width='100%' style='border-collapse:collapse;border-radius:8px;overflow:hidden;border:1px solid #eee;'>
@@ -638,13 +676,14 @@ def build_html(applied, goal, roles_data, is_goal_met):
     </table>
   </td></tr>
 
-  <!-- CTA / Motivation -->
   <tr><td style='padding:0 24px 20px;text-align:center;'>
     {cta}
   </td></tr>
 
 </table>
-<p style='text-align:center;font-size:11px;color:#bbb;margin-top:12px;'>Job Application Tracker · Baddela Raju · {date_str}</p>
+<p style='text-align:center;font-size:11px;color:#bbb;margin-top:12px;'>
+  Job Application Tracker &middot; Baddela Raju &middot; {date_str}
+</p>
 </body></html>
 """
 
@@ -685,7 +724,7 @@ def send_email(subject, applied, roles_data, is_goal_met):
 def morning_motivate():
     headline, body, _ = get_daily_motivation()
     date_str  = today_display()
-    subject   = f"🌅 Good Morning, Raju! — {headline} | {date_str}"
+    subject   = f"Good Morning, Raju! — {headline} | {date_str}"
 
     toast(
         f"Good Morning! {headline}",
@@ -695,11 +734,11 @@ def morning_motivate():
     send_email_raw(subject, html)
 
     print(f"\n{'='*55}")
-    print(f"  7 AM MORNING MOTIVATION")
+    print(f"  7 AM MORNING MOTIVATION (UK time)")
     print(f"  {date_str}")
     print(f"  Headline : {headline}")
     print(f"  Goal     : {GOAL} applications today")
-    print(f"  Roles    : AI | DA | DS | ML")
+    print(f"  Roles    : AI | DA | DS | ML | SE")
     print(f"{'='*55}\n")
 
 # ─── 12 PM — Midday check ────────────────────────────────────────────────────
@@ -713,33 +752,30 @@ def midday_check():
     date_str   = today_display()
 
     if is_goal:
-        subject = f"🏆 Midday — GOAL MET! {applied}/{GOAL} Applications | {date_str}"
+        subject = f"Midday — GOAL MET! {applied}/{GOAL} Applications | {date_str}"
         t_title = f"Midday Check: GOAL MET — {applied}/{GOAL}!"
         t_msg   = "You crushed the goal before noon! Outstanding work today, Raju!"
     elif applied == 0:
-        subject = f"⚠️ Midday Alert — 0/{GOAL} Applications Yet! | {date_str}"
+        subject = f"Midday Alert — 0/{GOAL} Applications Yet! | {date_str}"
         t_title = "Midday Alert: 0 Applications!"
-        t_msg   = f"It's noon and you haven't started! {GOAL} applications needed — go NOW!"
+        t_msg   = f"It's noon UK time and you haven't started! {GOAL} applications needed — go NOW!"
     else:
-        subject = f"📊 12 PM Check — {applied}/{GOAL} Done, {remaining} More Needed | {date_str}"
+        subject = f"12 PM UK — {applied}/{GOAL} Done, {remaining} More Needed | {date_str}"
         t_title = f"Midday: {applied}/{GOAL} Applications"
-        t_msg   = (f"{applied} done, {remaining} to go this afternoon! "
-                   f"AI={roles_data.get('ai',0)} DA={roles_data.get('da',0)} "
-                   f"DS={roles_data.get('ds',0)} ML={roles_data.get('ml',0)}")
+        role_summary = " | ".join(f"{k.upper()}={roles_data.get(k,0)}" for k in ROLES)
+        t_msg   = f"{applied} done, {remaining} to go this afternoon! {role_summary}"
 
     toast(t_title, t_msg)
     html = build_midday_html(applied, roles_data)
     send_email_raw(subject, html)
 
     print(f"\n{'='*55}")
-    print(f"  12 PM MIDDAY CHECK")
+    print(f"  12 PM MIDDAY CHECK (UK time)")
     print(f"  Date    : {date_str}")
     print(f"  Applied : {applied}/{GOAL}")
     print(f"  Status  : {'GOAL MET!' if is_goal else f'{remaining} remaining this afternoon'}")
-    print(f"  AI Eng  : {roles_data.get('ai', 0)}")
-    print(f"  Data Ana: {roles_data.get('da', 0)}")
-    print(f"  Data Sci: {roles_data.get('ds', 0)}")
-    print(f"  ML Eng  : {roles_data.get('ml', 0)}")
+    for key, label in ROLES.items():
+        print(f"  {label:<35}: {roles_data.get(key, 0)}")
     print(f"{'='*55}\n")
 
 # ─── 12 AM — Midnight final summary ──────────────────────────────────────────
@@ -753,19 +789,19 @@ def midnight_summary():
     date_str   = today_display()
 
     if is_goal:
-        subject = f"🏆 Day Complete — GOAL CRUSHED! {applied}/{GOAL} Applications | {date_str}"
+        subject = f"Day Complete — GOAL CRUSHED! {applied}/{GOAL} Applications | {date_str}"
         t_title = f"Day Done: GOAL CRUSHED — {applied}/{GOAL}!"
         t_msg   = "You finished the day strong! Outstanding work, Raju!"
     elif applied >= 15:
-        subject = f"🔥 Day Wrap-Up — {applied}/{GOAL} Applications | {date_str}"
+        subject = f"Day Wrap-Up — {applied}/{GOAL} Applications | {date_str}"
         t_title = f"Day Done: {applied}/{GOAL} — Great effort!"
         t_msg   = f"{applied} applications today. {remaining} short of goal — push harder tomorrow!"
     elif applied >= 5:
-        subject = f"⚠️ Day Wrap-Up — {applied}/{GOAL} Applications | {date_str}"
+        subject = f"Day Wrap-Up — {applied}/{GOAL} Applications | {date_str}"
         t_title = f"Day Done: {applied}/{GOAL} — Need more tomorrow"
         t_msg   = f"Only {applied} applications today. Tomorrow: start early, apply harder!"
     else:
-        subject = f"🚨 Day Wrap-Up — Only {applied}/{GOAL} Applications | {date_str}"
+        subject = f"Day Wrap-Up — Only {applied}/{GOAL} Applications | {date_str}"
         t_title = f"Day Done: {applied}/{GOAL} — Not enough!"
         t_msg   = f"{'Zero' if applied == 0 else applied} applications today. Tomorrow is a fresh start — make it count!"
 
@@ -774,62 +810,59 @@ def midnight_summary():
     send_email_raw(subject, html)
 
     print(f"\n{'='*55}")
-    print(f"  12 AM MIDNIGHT FINAL SUMMARY")
+    print(f"  12 AM MIDNIGHT FINAL SUMMARY (UK time)")
     print(f"  Date    : {date_str}")
     print(f"  Applied : {applied}/{GOAL}")
     print(f"  Status  : {'GOAL MET!' if is_goal else f'{remaining} short of goal'}")
-    print(f"  AI Eng  : {roles_data.get('ai', 0)}")
-    print(f"  Data Ana: {roles_data.get('da', 0)}")
-    print(f"  Data Sci: {roles_data.get('ds', 0)}")
-    print(f"  ML Eng  : {roles_data.get('ml', 0)}")
+    for key, label in ROLES.items():
+        print(f"  {label:<35}: {roles_data.get(key, 0)}")
     print(f"{'='*55}\n")
 
 # ─── Core check ───────────────────────────────────────────────────────────────
 
 def check_and_notify():
-    data      = get_today_data()
-    applied   = data.get("total", 0)
+    data       = get_today_data()
+    applied    = data.get("total", 0)
     roles_data = data.get("roles", {r: 0 for r in ROLES})
-    remaining = GOAL - applied
-    is_goal   = applied >= GOAL
-    hour      = datetime.now().hour
+    remaining  = GOAL - applied
+    is_goal    = applied >= GOAL
+    hour       = now_uk().hour
 
     if is_goal:
         title   = f"GOAL CRUSHED! {applied}/{GOAL} Jobs Applied Today!"
         message = "You're unstoppable! 25+ applications done. Keep the momentum tomorrow!"
-        subject = f"🏆 GOAL ACHIEVED — {applied}/{GOAL} Applications | {today_display()}"
+        subject = f"GOAL ACHIEVED — {applied}/{GOAL} Applications | {today_display()}"
     elif applied == 0 and hour >= 10:
         title   = "URGENT: 0 Applications Yet Today!"
         message = f"You haven't started! 0/{GOAL} jobs applied. Get going NOW — {random.choice(MOTIVATIONS)}"
-        subject = f"⚠️ 0/{GOAL} Applications Today — Start NOW! | {today_display()}"
+        subject = f"0/{GOAL} Applications Today — Start NOW! | {today_display()}"
     elif applied == 0:
         title   = f"Good Morning! Time to Apply — Goal: {GOAL} Jobs Today"
-        message = f"Start your day strong! Apply to {GOAL} jobs across 4 roles. {random.choice(MOTIVATIONS)}"
-        subject = f"🌅 Morning Push — 0/{GOAL} Applications | {today_display()}"
+        message = f"Start your day strong! Apply to {GOAL} jobs across 5 roles. {random.choice(MOTIVATIONS)}"
+        subject = f"Morning Push — 0/{GOAL} Applications | {today_display()}"
     else:
         title   = f"Job Tracker: {applied}/{GOAL} Applied — {remaining} More Needed!"
-        message = f"{applied} done, {remaining} to go! Roles: AI={roles_data.get('ai',0)} | DA={roles_data.get('da',0)} | DS={roles_data.get('ds',0)} | ML={roles_data.get('ml',0)}"
-        subject = f"📋 {applied}/{GOAL} Applications Today — {remaining} More To Go! | {today_display()}"
+        role_summary = " | ".join(f"{k.upper()}={roles_data.get(k,0)}" for k in ROLES)
+        message = f"{applied} done, {remaining} to go! {role_summary}"
+        subject = f"{applied}/{GOAL} Applications Today — {remaining} More To Go! | {today_display()}"
 
     toast(title, message)
     send_email(subject, applied, roles_data, is_goal)
     print(f"\n{'='*50}")
-    print(f"  Date    : {today_display()}")
+    print(f"  Date    : {today_display()} (UK time)")
     print(f"  Applied : {applied}/{GOAL}")
     print(f"  Status  : {'GOAL MET!' if is_goal else f'{remaining} remaining'}")
-    print(f"  AI Eng  : {roles_data.get('ai',0)}")
-    print(f"  Data Ana: {roles_data.get('da',0)}")
-    print(f"  Data Sci: {roles_data.get('ds',0)}")
-    print(f"  ML Eng  : {roles_data.get('ml',0)}")
+    for key, label in ROLES.items():
+        print(f"  {label:<35}: {roles_data.get(key, 0)}")
     print(f"{'='*50}\n")
 
 # ─── Summary ──────────────────────────────────────────────────────────────────
 
 def show_summary():
     log = load_log()
-    print(f"\n{'='*65}")
+    print(f"\n{'='*70}")
     print(f"  JOB APPLICATION TRACKER — BADDELA RAJU")
-    print(f"{'='*65}")
+    print(f"{'='*70}")
     if not log:
         print("  No data yet. Start logging with: python resume_tracker.py add ai 3")
         return
@@ -848,11 +881,11 @@ def show_summary():
         status = "✅ GOAL" if total >= GOAL else f"❌ MISSED (-{GOAL - total})"
         if total >= GOAL:
             goal_days += 1
-        role_str = f"AI={roles.get('ai',0)} DA={roles.get('da',0)} DS={roles.get('ds',0)} ML={roles.get('ml',0)}"
+        role_str = " | ".join(f"{k.upper()}={roles.get(k, 0)}" for k in ROLES)
         print(f"  {date}  {total:3d}/{GOAL}  [{status}]  {role_str}")
         for r in ROLES:
             role_totals[r] += roles.get(r, 0)
-    print(f"{'─'*65}")
+    print(f"{'─'*70}")
     print(f"  Total applications  : {grand_total}")
     print(f"  Days tracked        : {len(log)}")
     print(f"  Days goal met       : {goal_days}")
@@ -860,7 +893,7 @@ def show_summary():
     print(f"\n  By Role:")
     for key, label in ROLES.items():
         print(f"    {label:<35}: {role_totals[key]}")
-    print(f"{'='*65}\n")
+    print(f"{'='*70}\n")
 
 # ─── Setup email ──────────────────────────────────────────────────────────────
 
@@ -884,20 +917,33 @@ def setup_email():
         json.dump(cfg, f, indent=2)
     print(f"\nConfig saved to {CONFIG}")
     print("Now run: python resume_tracker.py schedule")
-    print("  → to register the 7 AM & 12 PM Windows scheduled tasks.")
 
 # ─── Setup Windows Task Scheduler ────────────────────────────────────────────
 
 def setup_scheduler():
-    python = sys.executable
-    script = os.path.abspath(__file__)
-    # Windows schtasks /tr needs escaped inner quotes around paths with spaces
-    tr = f'\\"{python}\\" \\"{script}\\"'
+    python  = sys.executable
+    script  = os.path.abspath(__file__)
+    pythonw = python.replace("python.exe", "pythonw.exe")
+
+    # Compute correct local task times for UK BST/GMT
+    uk_now    = now_uk()
+    local_now = datetime.now().astimezone()
+    delta_h   = int((uk_now.utcoffset() - local_now.utcoffset()).total_seconds() / 3600)
+
+    def uk_to_local(uk_hour):
+        return f"{(uk_hour - delta_h) % 24:02d}:00"
+
+    morning_t  = uk_to_local(7)
+    midday_t   = uk_to_local(12)
+
+    tr  = f'\\"{python}\\" \\"{script}\\"'
+    tww = f'\\"{pythonw}\\" \\"{script}\\"'
 
     print(f"\n{'='*60}")
-    print("  Setting up Windows Task Scheduler")
-    print(f"  Python : {python}")
-    print(f"  Script : {script}")
+    print(f"  Setting up Windows Task Scheduler")
+    print(f"  UK offset vs system: {delta_h:+d}h  (BST=+1, GMT=0)")
+    print(f"  Morning task: {morning_t} system time = 07:00 UK")
+    print(f"  Midday task : {midday_t} system time = 12:00 UK")
     print(f"{'='*60}\n")
 
     def register(name, sc_flags, arg, desc):
@@ -908,32 +954,29 @@ def setup_scheduler():
         if r.returncode != 0:
             print(f"         {r.stderr.strip()}")
 
-    # Watcher uses pythonw.exe (no console window) so it runs silently in background
-    pythonw = python.replace("python.exe", "pythonw.exe")
-    tw = f'\\"{pythonw}\\" \\"{script}\\"'
+    register("ResumeTracker_Morning_7AM",
+             f"/sc daily /st {morning_t}", "morning",
+             f"[{morning_t}] 7 AM UK motivation email")
+    register("ResumeTracker_Midday_12PM",
+             f"/sc daily /st {midday_t}", "midday",
+             f"[{midday_t}] 12 PM UK progress email")
 
-    register("ResumeTracker_Morning_7AM",     "/sc daily /st 07:00", "morning", "[07:00] 7 AM motivation email")
-    register("ResumeTracker_Midday_12PM",     "/sc daily /st 12:00", "midday",  "[12:00] 12 PM progress email")
-
-    # Watcher: starts silently at login, detects new files every 30s
-    watch_cmd = f'schtasks /create /tn "ResumeTracker_Watcher" /tr "{tw} watch" /sc onlogon /f'
+    watch_cmd = (
+        f'schtasks /create /tn "ResumeTracker_Watcher" '
+        f'/tr "{tww} watch" /sc onlogon /f'
+    )
     r = subprocess.run(watch_cmd, shell=True, capture_output=True, text=True)
     tag = "[OK]  " if r.returncode == 0 else "[FAIL]"
-    print(f"  {tag}  [Login ] File watcher starts silently on PC startup (checks every 30s)")
+    print(f"  {tag}  [Login] File watcher starts silently on login (checks every 30s)")
     if r.returncode != 0:
         print(f"         {r.stderr.strip()}")
         print(f"         Run this terminal as Administrator and try again.")
 
-    print(f"\n  How it works:")
-    print(f"    - Drop a .docx into any folder under {BASE}")
-    print(f"    - Within 30 min (or on next login) it is auto-classified and pushed to GitHub")
-    print(f"    - Scheduled emails always show the real count")
-    print(f"\n  To remove auto-scan tasks:")
-    print(f"    schtasks /delete /tn ResumeTracker_Scan_OnLogin /f")
-    print(f"    schtasks /delete /tn ResumeTracker_Scan_Every30Min /f")
+    print(f"\n  Drop any .docx resume file into: {SCAN_ROOT}")
+    print(f"  It will be auto-classified and counted within 30 seconds.")
     print(f"{'='*60}\n")
 
-# ─── LLM / Gemini integration ─────────────────────────────────────────────────
+# ─── LLM / Groq integration ──────────────────────────────────────────────────
 
 def load_context():
     path = os.path.join(BASE, "context.json")
@@ -943,7 +986,7 @@ def load_context():
     return {}
 
 def get_day_context():
-    now  = datetime.now()
+    now  = now_uk()
     wd   = now.weekday()   # 0=Mon … 6=Sun
     hour = now.hour
     on_shift = (
@@ -965,7 +1008,6 @@ def get_day_context():
     return "Normal weekday — Raju should aim for the full 25 applications today."
 
 def _build_gemini_profile():
-    """Build a rich profile string from context.json for the LLM prompt."""
     ctx = load_context()
     if not ctx:
         return ""
@@ -974,15 +1016,13 @@ def _build_gemini_profile():
     jh  = ctx.get("job_hunt", {})
     res = ctx.get("resumes", {})
 
-    # Collect skills per role
     role_skills = []
     for rkey in ("ai_engineer", "data_analyst", "data_scientist", "ml_engineer"):
         r = res.get(rkey, {})
         if r:
             skills_preview = " | ".join(r.get("skills", [])[:3])
-            role_skills.append(f"  [{r.get('title',rkey)}]: {skills_preview}")
+            role_skills.append(f"  [{r.get('title', rkey)}]: {skills_preview}")
 
-    # Collect all projects with metrics
     projects = []
     seen = set()
     for rkey in ("ai_engineer", "ml_engineer", "data_scientist", "data_analyst"):
@@ -993,12 +1033,11 @@ def _build_gemini_profile():
                 h = proj.get("highlights", [""])
                 projects.append(f"  - {name}: {h[0]}")
 
-    # Collect experience
     exp_lines = []
     seen_exp = set()
     for rkey in ("ai_engineer", "ml_engineer"):
         for e in res.get(rkey, {}).get("experience", []):
-            key = e.get("company","") + e.get("role","")
+            key = e.get("company", "") + e.get("role", "")
             if key not in seen_exp:
                 seen_exp.add(key)
                 h = " | ".join(e.get("highlights", [])[:2])
@@ -1013,7 +1052,7 @@ def _build_gemini_profile():
     return f"""=== BADDELA RAJU — FULL PROFILE ===
 Personal : {p.get('name')}, {p.get('location')} | {p.get('email')} | {p.get('phone')}
 Education: {p.get('education')}
-Context  : {p.get('context','')}
+Context  : {p.get('context', '')}
 
 Target Roles: {' | '.join(jh.get('target_roles', []))}
 Daily Goal  : {jh.get('daily_goal', 25)} applications/day
@@ -1031,11 +1070,10 @@ CERTIFICATIONS: {', '.join(certs[:6])}
 
 AMAZON SHIFT SCHEDULE:
   {' | '.join(ws.get('amazon_shifts', []))}
-  Note: {ws.get('shift_note','')}
+  Note: {ws.get('shift_note', '')}
 """
 
 def generate_llm_content(email_type, applied, roles_data, remaining):
-    """Call Gemini to generate rich, detailed personalised email content. Returns dict or None."""
     cfg     = load_config()
     api_key = cfg.get("groq_api_key", "")
     if not api_key:
@@ -1051,15 +1089,17 @@ def generate_llm_content(email_type, applied, roles_data, remaining):
     date_str = today_display()
     profile  = _build_gemini_profile()
 
+    role_lines = "\n".join(
+        f"  {label:<35}: {roles_data.get(key, 0)}"
+        for key, label in ROLES.items()
+    )
+
     progress = f"""
 === TODAY'S STATUS ===
-Date     : {date_str}
+Date     : {date_str} (UK time)
 Schedule : {day_note}
 Progress : {applied}/{GOAL} applications done, {remaining} remaining
-  AI / Generative AI Engineer : {roles_data.get('ai', 0)}
-  Data Analyst                : {roles_data.get('da', 0)}
-  Data Scientist              : {roles_data.get('ds', 0)}
-  ML Engineer                 : {roles_data.get('ml', 0)}
+{role_lines}
 """
 
     if email_type == "morning":
@@ -1086,7 +1126,7 @@ Return ONLY valid JSON — no markdown fences, no extra text:
         else:
             tone = "firm, direct, caring — unless on Amazon shift (then understanding and supportive)"
 
-        weakest_role = min(roles_data, key=lambda r: roles_data.get(r, 0))
+        weakest_role  = min(roles_data, key=lambda r: roles_data.get(r, 0))
         weakest_label = ROLES.get(weakest_role, weakest_role)
 
         instruction = f"""You are Raju's personal AI job hunt coach. Write a PROGRESS CHECK email.
@@ -1131,8 +1171,8 @@ Return ONLY valid JSON — no markdown fences, no extra text:
     try:
         client   = Groq(api_key=api_key)
         response = client.chat.completions.create(
-            model    = "llama-3.3-70b-versatile",
-            messages = [{"role": "user", "content": prompt}],
+            model      = "llama-3.3-70b-versatile",
+            messages   = [{"role": "user", "content": prompt}],
             max_tokens = 700,
         )
         text  = response.choices[0].message.content.strip()
@@ -1147,21 +1187,25 @@ Return ONLY valid JSON — no markdown fences, no extra text:
 # ─── Background file watcher ─────────────────────────────────────────────────
 
 def watch_folder(interval=30):
-    """Polls every `interval` seconds; scans instantly when new .docx is detected."""
+    """Polls every `interval` seconds; scans instantly when new .docx is detected in SCAN_ROOT."""
     log_path = os.path.join(BASE, "watcher.log")
 
     def log(msg):
-        line = f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] {msg}"
+        line = f"[{now_uk().strftime('%Y-%m-%d %H:%M:%S')} UK] {msg}"
         with open(log_path, "a") as f:
             f.write(line + "\n")
 
-    log(f"Watcher started — polling every {interval}s for new .docx files in {BASE}")
+    log(f"Watcher started — polling every {interval}s in {SCAN_ROOT}")
 
-    # Build initial snapshot of all .docx files
     def get_snapshot():
         snap = {}
-        for root, dirs, files in os.walk(BASE):
-            dirs[:] = [d for d in dirs if not d.startswith('.')]
+        for root, dirs, files in os.walk(SCAN_ROOT):
+            dirs[:] = [
+                d for d in dirs
+                if not d.startswith('.')
+                and os.path.normcase(os.path.abspath(os.path.join(root, d))) !=
+                   os.path.normcase(os.path.abspath(BASE))
+            ]
             for fname in files:
                 if fname.lower().endswith('.docx'):
                     fpath = os.path.join(root, fname)
@@ -1174,7 +1218,7 @@ def watch_folder(interval=30):
     while True:
         time.sleep(interval)
         try:
-            current = get_snapshot()
+            current   = get_snapshot()
             new_files = [p for p in current if p not in known]
             if new_files:
                 log(f"Detected {len(new_files)} new file(s): {[os.path.basename(p) for p in new_files]}")
@@ -1187,23 +1231,25 @@ def watch_folder(interval=30):
 # ─── CLI ──────────────────────────────────────────────────────────────────────
 
 def print_help():
-    print("""
+    print(f"""
 Job Application Tracker — Commands:
-  python resume_tracker.py morning          Send 7 AM motivation email (unique each day)
-  python resume_tracker.py midday           Send 12 PM progress check email
-  python resume_tracker.py scan            Auto-classify all .docx files and log them
-  python resume_tracker.py add <role> [n]  Log n applications (default 1)
-                                            Roles: ai, da, ds, ml
-  python resume_tracker.py check           Manual check + notification
-  python resume_tracker.py summary         Show full history
-  python resume_tracker.py setup           Configure email (run once)
-  python resume_tracker.py schedule        Register 7 AM & 12 PM Windows scheduled tasks
+  python resume_tracker.py morning          Send 7 AM UK motivation email
+  python resume_tracker.py midday           Send 12 PM UK progress check email
+  python resume_tracker.py midnight         Send midnight UK final summary
+  python resume_tracker.py scan             Auto-classify all .docx files and log them
+                                             (Scans: {SCAN_ROOT})
+  python resume_tracker.py add <role> [n]   Log n applications (default 1)
+                                             Roles: ai, da, ds, ml, se
+  python resume_tracker.py check            Manual check + notification
+  python resume_tracker.py summary          Show full history
+  python resume_tracker.py setup            Configure email (run once)
+  python resume_tracker.py schedule         Register Windows scheduled tasks (UK time)
 
 Examples:
-  python resume_tracker.py morning         (send today's motivation — different every day)
-  python resume_tracker.py add ai 5        (log 5 AI Engineer applications)
-  python resume_tracker.py add da 3        (log 3 Data Analyst applications)
-  python resume_tracker.py midday          (see how many done by noon)
+  python resume_tracker.py morning          (7 AM UK motivation — unique each day)
+  python resume_tracker.py add ai 5         (log 5 AI Engineer applications)
+  python resume_tracker.py add se 2         (log 2 Software Engineer applications)
+  python resume_tracker.py midday           (see how many done by noon UK time)
 """)
 
 if __name__ == "__main__":

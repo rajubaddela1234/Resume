@@ -1,64 +1,53 @@
-name: Resume Tracker — Daily Emails
-
-# All times UK BST (UTC+1) — update to GMT (UTC+0) in winter
-# 07:00 BST → morning motivation
-# 10:00 BST → progress check
-# 13:00 BST → progress check
-# 16:00 BST → progress check
-# 19:00 BST → progress check
-# 22:00 BST → progress check
-# 00:00 BST → midnight final summary
+name: Resume Tracker — Daily Emails (UK time)
 
 on:
   schedule:
-    - cron: '0 6  * * *'   # 07:00 BST (06:00 UTC)
-    - cron: '0 9  * * *'   # 10:00 BST (09:00 UTC)
-    - cron: '0 12 * * *'   # 13:00 BST (12:00 UTC)
-    - cron: '0 15 * * *'   # 16:00 BST (15:00 UTC)
-    - cron: '0 18 * * *'   # 19:00 BST (18:00 UTC)
-    - cron: '0 21 * * *'   # 22:00 BST (21:00 UTC)
-    - cron: '0 23 * * *'   # 00:00 BST next day (23:00 UTC)
-  workflow_dispatch:
+    # All times are UTC. UK is BST (UTC+1) in summer, GMT (UTC+0) in winter.
+    # These are set for BST (summer). Adjust by -1h for GMT (winter).
+    - cron: '0 6  * * *'   # 07:00 BST — Morning motivation
+    - cron: '0 9  * * *'   # 10:00 BST — Progress check
+    - cron: '0 12 * * *'   # 13:00 BST — Progress check
+    - cron: '0 15 * * *'   # 16:00 BST — Progress check
+    - cron: '0 18 * * *'   # 19:00 BST — Progress check
+    - cron: '0 21 * * *'   # 22:00 BST — Progress check
+    - cron: '0 23 * * *'   # 00:00 BST next day — Midnight summary
+  workflow_dispatch:        # Manual trigger from GitHub UI
 
 jobs:
   send-email:
     runs-on: ubuntu-latest
+
     env:
       EMAIL_SENDER:   ${{ secrets.EMAIL_SENDER }}
       EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
       EMAIL_RECEIVER: ${{ secrets.EMAIL_RECEIVER }}
-      GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+      GROQ_API_KEY:   ${{ secrets.GROQ_API_KEY }}
 
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Set up Python
+      - name: Set up Python 3.11
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
       - name: Install dependencies
-        run: pip install -r requirements.txt
+        run: pip install -r Resume/requirements.txt
 
-      - name: 7 AM — Morning motivation
-        if: >-
-          github.event.schedule == '0 6  * * *' ||
-          github.event_name == 'workflow_dispatch'
-        run: python resume_tracker.py morning
+      - name: 7 AM BST — Morning motivation email
+        if: github.event.schedule == '0 6  * * *' || github.event_name == 'workflow_dispatch'
+        run: python Resume/resume_tracker.py morning
 
-      - name: 10 AM / 1 PM / 4 PM / 7 PM / 10 PM — Progress check
-        if: >-
+      - name: Progress check (10 AM / 1 PM / 4 PM / 7 PM / 10 PM BST)
+        if: >
           github.event.schedule == '0 9  * * *' ||
           github.event.schedule == '0 12 * * *' ||
           github.event.schedule == '0 15 * * *' ||
           github.event.schedule == '0 18 * * *' ||
-          github.event.schedule == '0 21 * * *' ||
-          github.event_name == 'workflow_dispatch'
-        run: python resume_tracker.py check
+          github.event.schedule == '0 21 * * *'
+        run: python Resume/resume_tracker.py check
 
-      - name: 12 AM — Midnight final summary
-        if: >-
-          github.event.schedule == '0 23 * * *' ||
-          github.event_name == 'workflow_dispatch'
-        run: python resume_tracker.py midnight
+      - name: Midnight BST — Final summary email
+        if: github.event.schedule == '0 23 * * *'
+        run: python Resume/resume_tracker.py midnight
