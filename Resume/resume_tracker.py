@@ -204,8 +204,8 @@ def classify_role(filename):
     for kw in MLE_PATTERN:
         if kw in name:
             return "ml"
-    # Any remaining .docx that isn't a cover letter counts as software/other
-    return "se"
+    # No keyword match — unclassified (will not be counted in job_log)
+    return "other"
 
 def load_scan_log():
     if os.path.exists(SCAN_LOG):
@@ -878,7 +878,7 @@ def show_summary():
             total = entry.get("total", 0)
             roles = entry.get("roles", {})
         grand_total += total
-        status = "✅ GOAL" if total >= GOAL else f"❌ MISSED (-{GOAL - total})"
+        status = "GOAL MET!" if total >= GOAL else f"missed  (-{GOAL - total})"
         if total >= GOAL:
             goal_days += 1
         role_str = " | ".join(f"{k.upper()}={roles.get(k, 0)}" for k in ROLES)
