@@ -107,10 +107,21 @@ def save_log(data):
         json.dump(data, f, indent=2)
 
 def load_config():
+    cfg = {}
     if os.path.exists(CONFIG):
         with open(CONFIG, "r") as f:
-            return json.load(f)
-    return {}
+            cfg = json.load(f)
+    # GitHub Actions: override with environment variables (secrets)
+    for env_key, cfg_key in [
+        ("EMAIL_SENDER",   "email_sender"),
+        ("EMAIL_PASSWORD", "email_password"),
+        ("EMAIL_RECEIVER", "email_receiver"),
+        ("GEMINI_API_KEY", "gemini_api_key"),
+    ]:
+        val = os.environ.get(env_key, "")
+        if val:
+            cfg[cfg_key] = val
+    return cfg
 
 def today():
     return datetime.now().strftime("%Y-%m-%d")
