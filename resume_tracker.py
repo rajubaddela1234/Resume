@@ -452,6 +452,43 @@ def build_midday_html(applied, roles_data, label_time="12:00 PM"):
         tomorrow_plan = llm.get("tomorrow_plan", "")
         strength      = llm.get("strength", "")
 
+    # ── Pre-build extra LLM blocks (avoids backslash-in-f-string on Python < 3.12) ──
+    action_plan_block = (
+        "<tr><td style='padding:0 24px 16px;'>"
+        "<div style='background:#eafaf1;border-left:5px solid #27ae60;border-radius:8px;padding:18px 20px;'>"
+        "<p style='margin:0 0 8px;font-size:13px;font-weight:bold;color:#1e8449;"
+        "text-transform:uppercase;letter-spacing:1px;'>Next 2 Hours — Your Action Plan</p>"
+        f"<p style='margin:0;font-size:14px;color:#2c3e50;line-height:1.7;'>{action_plan}</p>"
+        "</div></td></tr>"
+    ) if action_plan else ""
+
+    role_insight_block = (
+        "<tr><td style='padding:0 24px 16px;'>"
+        "<div style='background:#fef9e7;border-left:5px solid #f39c12;border-radius:8px;padding:16px 20px;'>"
+        "<p style='margin:0 0 6px;font-size:13px;font-weight:bold;color:#d68910;"
+        "text-transform:uppercase;letter-spacing:1px;'>Role Focus Insight</p>"
+        f"<p style='margin:0;font-size:14px;color:#2c3e50;line-height:1.7;'>{role_insight}</p>"
+        "</div></td></tr>"
+    ) if role_insight else ""
+
+    tomorrow_plan_block = (
+        "<tr><td style='padding:0 24px 16px;'>"
+        "<div style='background:#eaf4fb;border-left:5px solid #2980b9;border-radius:8px;padding:18px 20px;'>"
+        "<p style='margin:0 0 8px;font-size:13px;font-weight:bold;color:#1a5276;"
+        "text-transform:uppercase;letter-spacing:1px;'>Tomorrow's Game Plan</p>"
+        f"<p style='margin:0;font-size:14px;color:#2c3e50;line-height:1.7;'>{tomorrow_plan}</p>"
+        "</div></td></tr>"
+    ) if tomorrow_plan else ""
+
+    strength_block = (
+        "<tr><td style='padding:0 24px 24px;'>"
+        "<div style='background:linear-gradient(135deg,#1a5276,#6e2f8c);border-radius:10px;padding:18px 24px;'>"
+        "<p style='margin:0 0 8px;font-size:13px;font-weight:bold;color:#aed6f1;"
+        "text-transform:uppercase;letter-spacing:1px;'>Skill to Spotlight Tomorrow</p>"
+        f"<p style='margin:0;font-size:14px;color:#fff;line-height:1.7;'>{strength}</p>"
+        "</div></td></tr>"
+    ) if strength else ""
+
     # ── Role rows ────────────────────────────────────────────
     roles_rows = ""
     for key, label in ROLES.items():
@@ -522,13 +559,10 @@ def build_midday_html(applied, roles_data, label_time="12:00 PM"):
     </div>
   </td></tr>
 
-  {'<!-- Action Plan --><tr><td style="padding:0 24px 16px;"><div style="background:#eafaf1;border-left:5px solid #27ae60;border-radius:8px;padding:18px 20px;"><p style="margin:0 0 8px;font-size:13px;font-weight:bold;color:#1e8449;text-transform:uppercase;letter-spacing:1px;">Next 2 Hours — Your Action Plan</p><p style="margin:0;font-size:14px;color:#2c3e50;line-height:1.7;">' + action_plan + '</p></div></td></tr>' if action_plan else ''}
-
-  {'<!-- Role Insight --><tr><td style="padding:0 24px 16px;"><div style="background:#fef9e7;border-left:5px solid #f39c12;border-radius:8px;padding:16px 20px;"><p style="margin:0 0 6px;font-size:13px;font-weight:bold;color:#d68910;text-transform:uppercase;letter-spacing:1px;">Role Focus Insight</p><p style="margin:0;font-size:14px;color:#2c3e50;line-height:1.7;">' + role_insight + '</p></div></td></tr>' if role_insight else ''}
-
-  {'<!-- Tomorrow Plan --><tr><td style="padding:0 24px 16px;"><div style="background:#eaf4fb;border-left:5px solid #2980b9;border-radius:8px;padding:18px 20px;"><p style="margin:0 0 8px;font-size:13px;font-weight:bold;color:#1a5276;text-transform:uppercase;letter-spacing:1px;">Tomorrow\'s Game Plan</p><p style="margin:0;font-size:14px;color:#2c3e50;line-height:1.7;">' + tomorrow_plan + '</p></div></td></tr>' if tomorrow_plan else ''}
-
-  {'<!-- Strength Spotlight --><tr><td style="padding:0 24px 24px;"><div style="background:linear-gradient(135deg,#1a5276,#6e2f8c);border-radius:10px;padding:18px 24px;"><p style="margin:0 0 8px;font-size:13px;font-weight:bold;color:#aed6f1;text-transform:uppercase;letter-spacing:1px;">Skill to Spotlight Tomorrow</p><p style="margin:0;font-size:14px;color:#fff;line-height:1.7;">' + strength + '</p></div></td></tr>' if strength else ''}
+  {action_plan_block}
+  {role_insight_block}
+  {tomorrow_plan_block}
+  {strength_block}
 
 </table>
 <p style='text-align:center;font-size:11px;color:#bbb;margin-top:12px;'>
