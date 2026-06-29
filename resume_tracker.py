@@ -11,8 +11,8 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from zoneinfo import ZoneInfo
 
-BASE      = os.path.dirname(os.path.abspath(__file__))   # Resume/
-SCAN_ROOT = os.path.dirname(BASE)                         # parent dir — drop .docx files here
+BASE      = os.path.dirname(os.path.abspath(__file__))   # repo root
+SCAN_ROOT = BASE                                           # scan from repo root
 JOB_LOG   = os.path.join(BASE, "job_log.json")
 CONFIG    = os.path.join(BASE, "tracker_config.json")
 GOAL      = 25

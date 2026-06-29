@@ -1,9 +1,13 @@
 __pycache__/
 *.pyc
 *.pyo
-*.pyd
-.env
 
 # Tracker secrets — never commit
-Resume/tracker_config.json
 tracker_config.json
+
+# Local scan state — not needed on GitHub
+scanned_files.json
+watcher.log
+
+# Local Resume/ subfolder (kept only on machine)
+Resume/

@@ -1,6 +1,0 @@
-__pycache__/
-*.pyc
-tracker_config.json
-watcher.log
-scanned_files.json
-.github/
