@@ -12,6 +12,23 @@ BASE = os.path.dirname(os.path.abspath(__file__))
 JOB_LOG   = os.path.join(BASE, "job_log.json")
 CONFIG    = os.path.join(BASE, "tracker_config.json")
 GOAL      = 25
+SCAN_LOG  = os.path.join(BASE, "scanned_files.json")
+
+# Keywords to classify role from filename (checked in order)
+ROLE_KEYWORDS = {
+    "da": ["data_analyst", "dataanalyst", "labour_model", "labourmodel"],
+    "ds": ["data_scientist", "datascientist", "data_science"],
+    "ml": ["ml_engineer", "ml_researcher", "applied_ml", "founding_ml"],
+    "ai": [
+        "ai_engineer", "ai_developer", "ai_devloper", "ai_builder", "ai_specialist",
+        "ai_solutions", "ai_creative", "ai_qa", "ai_researcher", "ai_platform",
+        "ai_associate", "ai_operations", "ai_data", "applied_ai", "agentic_ai",
+        "agenticai", "llm_engineer", "rag_engineer", "graduate_ai", "trainee_ai",
+        "aiml_engineer", "forward_deployed_ai", "generative_ai", "ml_evaluation",
+        "mle_agentic", "ai_intern", "numi_ai",
+    ],
+}
+MLE_PATTERN = ["_mle", "mle_", "mle."]   # standalone MLE files → ml
 
 ROLES = {
     "ai": "AI / Generative AI Engineer",
@@ -114,10 +131,99 @@ def add_application(role_key, n=1):
     save_log(log)
     return log[t]
 
+def classify_role(filename):
+    name = filename.lower().replace("-", "_").replace(" ", "_")
+    for role in ("da", "ds", "ai", "ml"):
+        for kw in ROLE_KEYWORDS[role]:
+            if kw in name:
+                return role
+    for kw in MLE_PATTERN:
+        if kw in name:
+            return "ml"
+    return None
+
+def load_scan_log():
+    if os.path.exists(SCAN_LOG):
+        with open(SCAN_LOG, "r") as f:
+            return json.load(f)
+    return {}
+
+def save_scan_log(data):
+    with open(SCAN_LOG, "w") as f:
+        json.dump(data, f, indent=2)
+
+def add_application_for_date(date_str, role_key, n=1):
+    log = load_log()
+    if date_str not in log or isinstance(log[date_str], int):
+        log[date_str] = {"total": 0, "roles": {r: 0 for r in ROLES}}
+    log[date_str]["total"] = log[date_str].get("total", 0) + n
+    log[date_str]["roles"][role_key] = log[date_str]["roles"].get(role_key, 0) + n
+    save_log(log)
+
+def scan_and_log():
+    scan_log  = load_scan_log()
+    new_files = []
+    unknown   = []
+
+    for root, dirs, files in os.walk(BASE):
+        dirs[:] = [d for d in dirs if not d.startswith('.')]
+        for fname in files:
+            if not fname.lower().endswith('.docx'):
+                continue
+            fpath    = os.path.join(root, fname)
+            rel_path = os.path.relpath(fpath, BASE)
+            if rel_path in scan_log:
+                continue
+
+            role = classify_role(fname)
+            mtime     = os.path.getmtime(fpath)
+            file_date = datetime.fromtimestamp(mtime).strftime("%Y-%m-%d")
+
+            if role is None:
+                unknown.append(rel_path)
+                scan_log[rel_path] = {"role": "unknown", "date": file_date}
+                continue
+
+            add_application_for_date(file_date, role)
+            scan_log[rel_path] = {"role": role, "date": file_date}
+            new_files.append((rel_path, role, file_date))
+
+    save_scan_log(scan_log)
+
+    # Summary
+    role_counts = {r: 0 for r in ROLES}
+    date_counts = {}
+    for _, role, date in new_files:
+        role_counts[role] += 1
+        date_counts[date] = date_counts.get(date, 0) + 1
+
+    print(f"\n{'='*60}")
+    print(f"  SCAN COMPLETE — {len(new_files)} new files logged")
+    print(f"{'='*60}")
+    if new_files:
+        print(f"\n  By Role:")
+        for key, label in ROLES.items():
+            if role_counts[key]:
+                print(f"    {label:<35}: {role_counts[key]}")
+        print(f"\n  By Date (most recent 5):")
+        for date in sorted(date_counts)[-5:]:
+            print(f"    {date}: {date_counts[date]} applications")
+    if unknown:
+        print(f"\n  Unclassified ({len(unknown)}) — add manually with 'add' command:")
+        for p in unknown[:8]:
+            print(f"    {os.path.basename(p)}")
+        if len(unknown) > 8:
+            print(f"    ... and {len(unknown)-8} more")
+    print(f"{'='*60}\n")
+
+    if new_files:
+        auto_push_log()
+    return new_files
+
 def auto_push_log():
     """Silently commit and push job_log.json so GitHub Actions midday check sees latest data."""
     try:
-        subprocess.run(["git", "add", JOB_LOG], capture_output=True, cwd=BASE)
+        subprocess.run(["git", "add", JOB_LOG, SCAN_LOG], capture_output=True, cwd=BASE)
         result = subprocess.run(
             ["git", "commit", "-m", f"log: applications {today()}"],
             capture_output=True, cwd=BASE
@@ -723,6 +829,7 @@ def print_help():
 Job Application Tracker — Commands:
   python resume_tracker.py morning          Send 7 AM motivation email (unique each day)
   python resume_tracker.py midday           Send 12 PM progress check email
+  python resume_tracker.py scan            Auto-classify all .docx files and log them
   python resume_tracker.py add <role> [n]  Log n applications (default 1)
                                             Roles: ai, da, ds, ml
   python resume_tracker.py check           Manual check + notification
@@ -765,6 +872,8 @@ if __name__ == "__main__":
                     toast("GOAL ACHIEVED!", f"{total}/{GOAL} jobs applied today! YOU DID IT!")
                 else:
                     toast(f"{total}/{GOAL} Jobs Applied", f"{GOAL - total} more to go today! Keep pushing!")
+    elif args[0] == "scan":
+        scan_and_log()
     elif args[0] == "summary":
         show_summary()
     elif args[0] == "setup":
