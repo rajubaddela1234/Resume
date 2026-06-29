@@ -116,7 +116,7 @@ def load_config():
         ("EMAIL_SENDER",   "email_sender"),
         ("EMAIL_PASSWORD", "email_password"),
         ("EMAIL_RECEIVER", "email_receiver"),
-        ("GEMINI_API_KEY", "gemini_api_key"),
+        ("GROQ_API_KEY", "groq_api_key"),
     ]:
         val = os.environ.get(env_key, "")
         if val:
@@ -877,9 +877,9 @@ def setup_email():
     receiver = input("Receiver email [rajubaddela1234@gmail.com]: ").strip()
     if not receiver:
         receiver = "rajubaddela1234@gmail.com"
-    gemini  = input("Gemini API Key (leave blank to skip): ").strip()
+    groq_key = input("Groq API Key (leave blank to skip): ").strip()
     cfg = {"email_sender": sender, "email_password": password,
-           "email_receiver": receiver, "gemini_api_key": gemini}
+           "email_receiver": receiver, "groq_api_key": groq_key}
     with open(CONFIG, "w") as f:
         json.dump(cfg, f, indent=2)
     print(f"\nConfig saved to {CONFIG}")
@@ -1037,12 +1037,12 @@ AMAZON SHIFT SCHEDULE:
 def generate_llm_content(email_type, applied, roles_data, remaining):
     """Call Gemini to generate rich, detailed personalised email content. Returns dict or None."""
     cfg     = load_config()
-    api_key = cfg.get("gemini_api_key", "")
+    api_key = cfg.get("groq_api_key", "")
     if not api_key:
         return None
 
     try:
-        from google import genai
+        from groq import Groq
         import re as _re
     except ImportError:
         return None
@@ -1129,17 +1129,18 @@ Return ONLY valid JSON — no markdown fences, no extra text:
     )
 
     try:
-        client   = genai.Client(api_key=api_key)
-        response = client.models.generate_content(
-            model    = "gemini-2.0-flash",
-            contents = prompt,
+        client   = Groq(api_key=api_key)
+        response = client.chat.completions.create(
+            model    = "llama-3.3-70b-versatile",
+            messages = [{"role": "user", "content": prompt}],
+            max_tokens = 700,
         )
-        text  = response.text.strip()
+        text  = response.choices[0].message.content.strip()
         match = _re.search(r'\{[\s\S]*\}', text)
         if match:
             return json.loads(match.group())
     except Exception as e:
-        print(f"Gemini error: {e}")
+        print(f"Groq error: {e}")
 
     return None
 
