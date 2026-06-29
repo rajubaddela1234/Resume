@@ -33,6 +33,9 @@ jobs:
         with:
           python-version: '3.11'
 
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
       - name: 7 AM — Morning motivation
         if: >-
           github.event.schedule == '0 6  * * *' ||

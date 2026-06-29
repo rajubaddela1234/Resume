@@ -1,0 +1,82 @@
+{
+  "name": "Baddela Raju",
+  "location": "Wimbledon, London, UK",
+  "email": "rajubaddela1234@gmail.com",
+  "phone": "+44 7887 175084",
+  "linkedin": "linkedin.com/in/rajubaddela1234",
+  "github": "github.com/rajubaddela1234",
+
+  "education": "MSc Data Science, Roehampton University, London (Oct 2024 – Jan 2026, Completed)",
+
+  "daily_goal": 25,
+  "target_roles": [
+    "AI / Generative AI Engineer",
+    "Data Analyst",
+    "Data Scientist",
+    "Machine Learning Engineer"
+  ],
+
+  "key_skills": [
+    "LangChain", "LangGraph", "QLoRA", "RAG pipelines", "Agentic AI", "MCP",
+    "LLM Fine-Tuning (SFT, LoRA, QLoRA, DPO)", "RAGAS", "LangSmith",
+    "MLOps", "AWS (EC2, S3, SageMaker, ECR)", "Azure", "Docker", "GitHub Actions CI/CD",
+    "PyTorch", "TensorFlow", "Keras", "XGBoost", "Scikit-Learn",
+    "FAISS", "ChromaDB", "Pinecone", "FastAPI", "Flask", "Streamlit",
+    "Power BI", "Tableau", "DAX", "Python", "SQL", "PostgreSQL", "MongoDB"
+  ],
+
+  "experience": [
+    {
+      "company": "KPMG",
+      "role": "Data Analytics Intern",
+      "period": "Sep 2023 – Mar 2024",
+      "highlights": [
+        "Analysed 5,000+ customer records in Python/Excel for marketing insights",
+        "Built K-means customer segmentation model",
+        "Created Tableau dashboard cutting reporting time from 2 days to 2 hours"
+      ]
+    },
+    {
+      "company": "iNeuron",
+      "role": "Generative AI Engineer Intern",
+      "period": "Sep 2023 – Mar 2024",
+      "highlights": [
+        "Built production Multimodal RAG pipeline (PDF/DOCX/PPTX/TXT + OCR + Gemini summarisation)",
+        "Implemented hybrid FAISS+BM25 retrieval with cross-encoder reranking",
+        "Automated RAGAS evaluation with CI/CD gating (faithfulness, relevance, precision, recall)",
+        "LangSmith observability for latency (p50/p95/p99) and token cost monitoring"
+      ]
+    }
+  ],
+
+  "notable_projects": [
+    "Agentic AI Video Synthesizer — 8-agent LangGraph pipeline with YouTube/Tavily/arXiv retrieval and D-ID avatar video generation",
+    "Domain-Specific LLM Fine-Tuning — 3-stage QLoRA pipeline on TinyLlama-1.1B, ROUGE-L 0.0924→0.1637, DPO alignment",
+    "Multimodal MCP Research Assistant — Whisper + Gemini Vision + 5-node LangGraph ReAct + 3-layer memory (MemorySaver/SQLite/FAISS)",
+    "Credit Card Fraud Detection — XGBoost F1:0.9534 ROC-AUC:0.9841, deployed AWS EC2 via Docker + GitHub Actions CI/CD",
+    "Diamond Price Prediction — MLflow + DVC + Airflow + Azure App Service CI/CD",
+    "Regional Sales Analytics Dashboard — Power BI 3-page dashboard on 64K orders, $1.2bn revenue insights",
+    "TCS Stock Price Prediction — 4-layer LSTM + Keras Tuner, R²:0.9291, Streamlit deployment",
+    "AI Traffic Monitoring — YOLOv8 real-time vehicle detection and counting system"
+  ],
+
+  "certifications": [
+    "Building RAG Agents with LLMs – Nvidia (2025)",
+    "Machine Learning – Stanford University (2025)",
+    "Google AI Essentials – Google (2025)",
+    "Tableau Certification – Simplilearn (2024)",
+    "Artificial Intelligence in Python – Great Learning (2023)",
+    "Python – HackerRank (2022)"
+  ],
+
+  "work_schedule": {
+    "amazon_associate_shifts": [
+      "Thursday 23:00 to Friday 11:00",
+      "Friday 23:00 to Saturday 11:00"
+    ],
+    "shift_note": "On Amazon shift days Raju has very limited time. Even 5-10 quality applications is a great achievement. Do NOT pressure him with the full 25-job goal — be understanding and encouraging.",
+    "weekend_note": "Saturdays and Sundays see much lower recruiter activity. Fewer responses are expected. Encourage quality over quantity and use the time to research companies or refine resumes."
+  },
+
+  "personal_context": "Raju is a recent MSc Data Science graduate from Roehampton University London. He is highly skilled in AI/ML engineering and is actively job hunting in the competitive London tech market. He works Amazon Associate night shifts to financially support himself while job hunting — which makes his dedication to applying 25 jobs per day even more impressive. He is ambitious, hardworking, and determined to land a role that matches his depth of expertise."
+}

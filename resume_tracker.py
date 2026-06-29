@@ -270,7 +270,17 @@ $n.Dispose()
 # ─── Email builders ───────────────────────────────────────────────────────────
 
 def build_morning_html():
-    headline, body, color = get_daily_motivation()
+    applied    = get_today_total()
+    data       = get_today_data()
+    roles_data = data.get("roles", {r: 0 for r in ROLES})
+    remaining  = max(0, GOAL - applied)
+    llm        = generate_llm_content("morning", applied, roles_data, remaining)
+    if llm:
+        headline = llm.get("headline", "Rise and Dominate Today")
+        body     = llm.get("body", "")
+        color    = "#1a5276"
+    else:
+        headline, body, color = get_daily_motivation()
     date_str = today_display()
     roles_list = "".join(
         f"<li style='margin:6px 0;font-size:14px;color:#2c3e50;'><b>{label}</b></li>"
@@ -347,10 +357,10 @@ def build_midday_html(applied, roles_data, label_time="12:00 PM"):
         header_txt = f"🚨 {applied}/{GOAL} — Noon Alert!"
         sub_txt    = f"Day is half gone · {date_str}"
 
-    # ── Tiered ending message ────────────────────────────────
+    # ── Tiered ending message (hardcoded defaults) ───────────────
     if is_goal:
         end_color = "#27ae60"
-        end_icon  = "🏆"
+        end_icon  = "trophy"
         end_title = "Morning Champion — Goal Achieved!"
         end_body  = (
             f"You applied to <b>{applied} jobs</b> and crushed your daily goal of {GOAL} before noon. "
@@ -359,37 +369,37 @@ def build_midday_html(applied, roles_data, label_time="12:00 PM"):
         )
     elif applied >= 15:
         end_color = "#e67e22"
-        end_icon  = "🔥"
+        end_icon  = "fire"
         end_title = "Great Morning — Finish It This Afternoon!"
         end_body  = (
-            f"<b>{applied} applications</b> done by noon — you're on a great track! "
-            f"Just <b>{remaining} more</b> stands between you and your daily goal. "
-            "Block one focused hour this afternoon, power through the remaining applications, "
-            "and end today knowing you gave it everything. You're so close!"
+            f"<b>{applied} applications</b> done — you're on a great track! "
+            f"Just <b>{remaining} more</b> to hit your daily goal. "
+            "Block one focused hour, power through, and end today knowing you gave it everything."
         )
     elif applied >= 5:
         end_color = "#c0392b"
-        end_icon  = "⏰"
-        end_title = "Afternoon Is Your Second Chance — Take It!"
+        end_icon  = "clock"
+        end_title = "Push Hard This Afternoon!"
         end_body  = (
-            f"It's noon and you have <b>{applied} applications</b>. You need <b>{remaining} more</b> "
-            "to hit your goal — that's a lot to cover this afternoon, but it's absolutely doable. "
-            "Close every distraction, open LinkedIn, Indeed, and Naukri right now, "
-            "and apply non-stop for the next 2 hours. Your future job is on the other side of that effort. "
-            "Do not let today end without hitting 25!"
+            f"You have <b>{applied} applications</b> so far. You need <b>{remaining} more</b> "
+            "to hit your goal — close every distraction and apply non-stop for the next 2 hours."
         )
     else:
         end_color = "#922b21"
-        end_icon  = "🚨"
+        end_icon  = "alert"
         end_title = "Urgent — The Clock Is Running. Act NOW!"
         end_body  = (
-            f"<b>{'Zero' if applied == 0 else str(applied)} applications</b> by noon is not acceptable, Raju. "
-            "Your dream job is not going to find you — you have to chase it. "
-            "Right now, set a 60-minute timer, open every job platform, and apply to <b>at least 15 jobs immediately</b>. "
-            "Your competition has already sent dozens of applications this morning. "
-            "Every hour you wait is an opportunity slipping to someone else. "
-            "Get up. Open your laptop. Start NOW!"
+            f"<b>{'Zero' if applied == 0 else str(applied)} applications</b> so far, Raju. "
+            "Your dream job will not find you — you have to chase it. "
+            "Set a 60-minute timer and apply to at least 15 jobs right now."
         )
+
+    # ── Override with LLM personalised content if available ──────
+    email_kind = "midnight" if label_time == "12:00 AM" else "check"
+    llm = generate_llm_content(email_kind, applied, roles_data, remaining)
+    if llm:
+        end_title = llm.get("headline", end_title)
+        end_body  = llm.get("body", end_body)
 
     # ── Role rows ────────────────────────────────────────────
     roles_rows = ""
@@ -774,7 +784,9 @@ def setup_email():
     receiver = input("Receiver email [rajubaddela1234@gmail.com]: ").strip()
     if not receiver:
         receiver = "rajubaddela1234@gmail.com"
-    cfg = {"email_sender": sender, "email_password": password, "email_receiver": receiver}
+    gemini  = input("Gemini API Key (leave blank to skip): ").strip()
+    cfg = {"email_sender": sender, "email_password": password,
+           "email_receiver": receiver, "gemini_api_key": gemini}
     with open(CONFIG, "w") as f:
         json.dump(cfg, f, indent=2)
     print(f"\nConfig saved to {CONFIG}")
@@ -827,6 +839,135 @@ def setup_scheduler():
     print(f"    schtasks /delete /tn ResumeTracker_Scan_OnLogin /f")
     print(f"    schtasks /delete /tn ResumeTracker_Scan_Every30Min /f")
     print(f"{'='*60}\n")
+
+# ─── LLM / Gemini integration ─────────────────────────────────────────────────
+
+def load_context():
+    path = os.path.join(BASE, "context.json")
+    if os.path.exists(path):
+        with open(path) as f:
+            return json.load(f)
+    return {}
+
+def get_day_context():
+    """Returns a plain-English note about today's schedule for the LLM prompt."""
+    now  = datetime.now()
+    wd   = now.weekday()   # 0=Mon … 6=Sun
+    hour = now.hour
+
+    on_shift = (
+        (wd == 3 and hour >= 23) or   # Thu after 11 PM
+        (wd == 4 and hour < 11)  or   # Fri before 11 AM  (Thu night shift)
+        (wd == 4 and hour >= 23) or   # Fri after 11 PM
+        (wd == 5 and hour < 11)        # Sat before 11 AM  (Fri night shift)
+    )
+
+    if on_shift:
+        return (
+            "Raju is currently ON his Amazon Associate night shift (Thu 11PM-Fri 11AM or Fri 11PM-Sat 11AM). "
+            "He has very limited time. Even 5-10 quality applications is a great achievement today. "
+            "Do NOT pressure him with the full 25-job goal — acknowledge his effort working night shifts while job hunting."
+        )
+    if wd == 5:
+        return "It is Saturday. Recruiter activity is low on weekends — fewer responses expected. Encourage consistency but quality over quantity."
+    if wd == 6:
+        return "It is Sunday. Recruiter activity is very low. Encourage Raju to apply to a few high-quality roles and use time to refine resumes."
+    return "Normal weekday — Raju should aim for the full 25 applications today."
+
+def generate_llm_content(email_type, applied, roles_data, remaining):
+    """Call Gemini to generate personalised email content. Returns dict or None on failure."""
+    cfg     = load_config()
+    api_key = cfg.get("gemini_api_key", "")
+    if not api_key:
+        return None
+
+    try:
+        import google.generativeai as genai
+        import re as _re
+    except ImportError:
+        return None
+
+    day_note = get_day_context()
+    date_str = today_display()
+
+    profile = f"""
+ABOUT RAJU:
+  Name      : Baddela Raju
+  Location  : Wimbledon, London, UK
+  Education : MSc Data Science, Roehampton University London (Oct 2024 – Jan 2026, Completed)
+  Roles     : AI/Generative AI Engineer | Data Analyst | Data Scientist | ML Engineer
+  Daily goal: {GOAL} applications
+  Key skills: LangChain, LangGraph, QLoRA, RAG, Agentic AI, MCP, MLOps, AWS, PyTorch,
+              Power BI, Python, Docker, GitHub Actions CI/CD, LLM Fine-Tuning (SFT/LoRA/DPO),
+              RAGAS, FAISS, FastAPI, XGBoost, Scikit-Learn
+  Experience: KPMG Data Analytics Intern; iNeuron Generative AI Engineer Intern
+  Projects  : Agentic AI Video Synthesizer (8-agent LangGraph), QLoRA LLM Fine-Tuning pipeline,
+              Multimodal MCP Research Assistant, Credit Card Fraud Detection (AWS CI/CD),
+              Diamond Price Prediction (MLflow + Azure), TCS LSTM Stock Forecasting
+  Context   : Recent MSc graduate, job hunting in competitive London AI market.
+              Works Amazon Associate night shifts to support himself financially while job hunting.
+              Highly skilled, ambitious, and determined.
+"""
+
+    progress = f"""
+TODAY: {date_str}
+SCHEDULE: {day_note}
+APPLICATIONS: {applied}/{GOAL} done, {remaining} remaining
+  AI/Generative AI Engineer : {roles_data.get('ai', 0)}
+  Data Analyst              : {roles_data.get('da', 0)}
+  Data Scientist            : {roles_data.get('ds', 0)}
+  ML Engineer               : {roles_data.get('ml', 0)}
+"""
+
+    if email_type == "morning":
+        instruction = """Write a MORNING MOTIVATION email.
+Return ONLY valid JSON (no markdown, no extra text):
+{
+  "headline": "punchy headline 5-8 words — no emoji",
+  "body": "2-3 sentences — personal, references his specific skills (LangGraph/QLoRA/RAG), acknowledges today schedule, energetic coach tone"
+}"""
+
+    elif email_type == "check":
+        if applied >= GOAL:
+            tone = "celebratory — goal crushed!"
+        elif applied >= 15:
+            tone = "encouraging — almost there, push to finish"
+        elif applied >= 5:
+            tone = "urgent but understanding — big afternoon push needed"
+        else:
+            tone = "firm and motivating — unless on Amazon shift, then understanding"
+        instruction = f"""Write a PROGRESS CHECK email. Tone: {tone}
+Return ONLY valid JSON (no markdown, no extra text):
+{{
+  "headline": "headline reflecting current progress {applied}/{GOAL} — no emoji",
+  "body": "2-3 sentences — acknowledge exact numbers, reference schedule if relevant, push to finish or celebrate"
+}}"""
+
+    else:  # midnight / end of day
+        instruction = f"""Write an END OF DAY summary message.
+Return ONLY valid JSON (no markdown, no extra text):
+{{
+  "headline": "honest end-of-day headline for {applied}/{GOAL} — no emoji",
+  "body": "2-3 sentences — honest reflection on {applied}/{GOAL}, acknowledge Amazon shift or weekend if applicable, motivate for tomorrow"
+}}"""
+
+    prompt = (
+        "You are Raju's personal AI job hunt coach who knows him deeply.\n"
+        f"{profile}\n{progress}\n{instruction}"
+    )
+
+    try:
+        genai.configure(api_key=api_key)
+        model    = genai.GenerativeModel("gemini-2.5-pro")
+        response = model.generate_content(prompt)
+        text     = response.text.strip()
+        match    = _re.search(r'\{[\s\S]*\}', text)
+        if match:
+            return json.loads(match.group())
+    except Exception as e:
+        print(f"Gemini error: {e}")
+
+    return None
 
 # ─── Background file watcher ─────────────────────────────────────────────────
 
