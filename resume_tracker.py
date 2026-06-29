@@ -1042,7 +1042,7 @@ def generate_llm_content(email_type, applied, roles_data, remaining):
         return None
 
     try:
-        import google.generativeai as genai
+        from google import genai
         import re as _re
     except ImportError:
         return None
@@ -1129,11 +1129,13 @@ Return ONLY valid JSON — no markdown fences, no extra text:
     )
 
     try:
-        genai.configure(api_key=api_key)
-        model    = genai.GenerativeModel("gemini-1.5-flash")
-        response = model.generate_content(prompt)
-        text     = response.text.strip()
-        match    = _re.search(r'\{[\s\S]*\}', text)
+        client   = genai.Client(api_key=api_key)
+        response = client.models.generate_content(
+            model    = "gemini-2.0-flash",
+            contents = prompt,
+        )
+        text  = response.text.strip()
+        match = _re.search(r'\{[\s\S]*\}', text)
         if match:
             return json.loads(match.group())
     except Exception as e:
