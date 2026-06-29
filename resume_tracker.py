@@ -116,7 +116,7 @@ def load_config():
         ("EMAIL_SENDER",   "email_sender"),
         ("EMAIL_PASSWORD", "email_password"),
         ("EMAIL_RECEIVER", "email_receiver"),
-        ("GEMINI_API_KEY", "gemini_api_key"),
+        ("CLAUDE_API_KEY", "claude_api_key"),
     ]:
         val = os.environ.get(env_key, "")
         if val:
@@ -795,9 +795,9 @@ def setup_email():
     receiver = input("Receiver email [rajubaddela1234@gmail.com]: ").strip()
     if not receiver:
         receiver = "rajubaddela1234@gmail.com"
-    gemini  = input("Gemini API Key (leave blank to skip): ").strip()
+    claude  = input("Claude API Key (leave blank to skip): ").strip()
     cfg = {"email_sender": sender, "email_password": password,
-           "email_receiver": receiver, "gemini_api_key": gemini}
+           "email_receiver": receiver, "claude_api_key": claude}
     with open(CONFIG, "w") as f:
         json.dump(cfg, f, indent=2)
     print(f"\nConfig saved to {CONFIG}")
@@ -888,12 +888,12 @@ def get_day_context():
 def generate_llm_content(email_type, applied, roles_data, remaining):
     """Call Gemini to generate personalised email content. Returns dict or None on failure."""
     cfg     = load_config()
-    api_key = cfg.get("gemini_api_key", "")
+    api_key = cfg.get("claude_api_key", "")
     if not api_key:
         return None
 
     try:
-        import google.generativeai as genai
+        import anthropic
         import re as _re
     except ImportError:
         return None
@@ -968,15 +968,18 @@ Return ONLY valid JSON (no markdown, no extra text):
     )
 
     try:
-        genai.configure(api_key=api_key)
-        model    = genai.GenerativeModel("gemini-2.5-flash")
-        response = model.generate_content(prompt)
-        text     = response.text.strip()
-        match    = _re.search(r'\{[\s\S]*\}', text)
+        client   = anthropic.Anthropic(api_key=api_key)
+        message  = client.messages.create(
+            model      = "claude-haiku-4-5-20251001",
+            max_tokens = 400,
+            messages   = [{"role": "user", "content": prompt}]
+        )
+        text  = message.content[0].text.strip()
+        match = _re.search(r'\{[\s\S]*\}', text)
         if match:
             return json.loads(match.group())
     except Exception as e:
-        print(f"Gemini error: {e}")
+        print(f"Claude error: {e}")
 
     return None
 

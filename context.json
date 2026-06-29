@@ -1,82 +1,306 @@
 {
-  "name": "Baddela Raju",
-  "location": "Wimbledon, London, UK",
-  "email": "rajubaddela1234@gmail.com",
-  "phone": "+44 7887 175084",
-  "linkedin": "linkedin.com/in/rajubaddela1234",
-  "github": "github.com/rajubaddela1234",
-
-  "education": "MSc Data Science, Roehampton University, London (Oct 2024 – Jan 2026, Completed)",
-
-  "daily_goal": 25,
-  "target_roles": [
-    "AI / Generative AI Engineer",
-    "Data Analyst",
-    "Data Scientist",
-    "Machine Learning Engineer"
-  ],
-
-  "key_skills": [
-    "LangChain", "LangGraph", "QLoRA", "RAG pipelines", "Agentic AI", "MCP",
-    "LLM Fine-Tuning (SFT, LoRA, QLoRA, DPO)", "RAGAS", "LangSmith",
-    "MLOps", "AWS (EC2, S3, SageMaker, ECR)", "Azure", "Docker", "GitHub Actions CI/CD",
-    "PyTorch", "TensorFlow", "Keras", "XGBoost", "Scikit-Learn",
-    "FAISS", "ChromaDB", "Pinecone", "FastAPI", "Flask", "Streamlit",
-    "Power BI", "Tableau", "DAX", "Python", "SQL", "PostgreSQL", "MongoDB"
-  ],
-
-  "experience": [
-    {
-      "company": "KPMG",
-      "role": "Data Analytics Intern",
-      "period": "Sep 2023 – Mar 2024",
-      "highlights": [
-        "Analysed 5,000+ customer records in Python/Excel for marketing insights",
-        "Built K-means customer segmentation model",
-        "Created Tableau dashboard cutting reporting time from 2 days to 2 hours"
-      ]
-    },
-    {
-      "company": "iNeuron",
-      "role": "Generative AI Engineer Intern",
-      "period": "Sep 2023 – Mar 2024",
-      "highlights": [
-        "Built production Multimodal RAG pipeline (PDF/DOCX/PPTX/TXT + OCR + Gemini summarisation)",
-        "Implemented hybrid FAISS+BM25 retrieval with cross-encoder reranking",
-        "Automated RAGAS evaluation with CI/CD gating (faithfulness, relevance, precision, recall)",
-        "LangSmith observability for latency (p50/p95/p99) and token cost monitoring"
-      ]
-    }
-  ],
-
-  "notable_projects": [
-    "Agentic AI Video Synthesizer — 8-agent LangGraph pipeline with YouTube/Tavily/arXiv retrieval and D-ID avatar video generation",
-    "Domain-Specific LLM Fine-Tuning — 3-stage QLoRA pipeline on TinyLlama-1.1B, ROUGE-L 0.0924→0.1637, DPO alignment",
-    "Multimodal MCP Research Assistant — Whisper + Gemini Vision + 5-node LangGraph ReAct + 3-layer memory (MemorySaver/SQLite/FAISS)",
-    "Credit Card Fraud Detection — XGBoost F1:0.9534 ROC-AUC:0.9841, deployed AWS EC2 via Docker + GitHub Actions CI/CD",
-    "Diamond Price Prediction — MLflow + DVC + Airflow + Azure App Service CI/CD",
-    "Regional Sales Analytics Dashboard — Power BI 3-page dashboard on 64K orders, $1.2bn revenue insights",
-    "TCS Stock Price Prediction — 4-layer LSTM + Keras Tuner, R²:0.9291, Streamlit deployment",
-    "AI Traffic Monitoring — YOLOv8 real-time vehicle detection and counting system"
-  ],
-
-  "certifications": [
-    "Building RAG Agents with LLMs – Nvidia (2025)",
-    "Machine Learning – Stanford University (2025)",
-    "Google AI Essentials – Google (2025)",
-    "Tableau Certification – Simplilearn (2024)",
-    "Artificial Intelligence in Python – Great Learning (2023)",
-    "Python – HackerRank (2022)"
-  ],
+  "personal": {
+    "name": "Baddela Raju",
+    "location": "Wimbledon, London, UK",
+    "email": "rajubaddela1234@gmail.com",
+    "phone": "+44 7887 175084",
+    "linkedin": "linkedin.com/in/rajubaddela1234",
+    "github": "github.com/rajubaddela1234",
+    "education": "MSc Data Science, Roehampton University, London (Oct 2024 – Jan 2026, Completed)",
+    "context": "Recent MSc graduate actively job hunting in the competitive London AI/ML market. Works Amazon Associate night shifts to financially support himself while job hunting. Highly motivated, technically deep, and determined to land a role that matches his expertise."
+  },
 
   "work_schedule": {
-    "amazon_associate_shifts": [
+    "amazon_shifts": [
       "Thursday 23:00 to Friday 11:00",
       "Friday 23:00 to Saturday 11:00"
     ],
-    "shift_note": "On Amazon shift days Raju has very limited time. Even 5-10 quality applications is a great achievement. Do NOT pressure him with the full 25-job goal — be understanding and encouraging.",
-    "weekend_note": "Saturdays and Sundays see much lower recruiter activity. Fewer responses are expected. Encourage quality over quantity and use the time to research companies or refine resumes."
+    "shift_note": "On Amazon shift days Raju has very limited time for job applications. Even 5-10 quality applications is a great achievement. Be understanding and encouraging — do NOT pressure with the full 25-job goal.",
+    "weekend_note": "Saturdays and Sundays have lower recruiter activity. Fewer responses expected. Encourage quality over quantity and company research."
   },
 
-  "personal_context": "Raju is a recent MSc Data Science graduate from Roehampton University London. He is highly skilled in AI/ML engineering and is actively job hunting in the competitive London tech market. He works Amazon Associate night shifts to financially support himself while job hunting — which makes his dedication to applying 25 jobs per day even more impressive. He is ambitious, hardworking, and determined to land a role that matches his depth of expertise."
+  "job_hunt": {
+    "daily_goal": 25,
+    "target_roles": ["AI / Generative AI Engineer", "Data Analyst", "Data Scientist", "Machine Learning Engineer"]
+  },
+
+  "resumes": {
+
+    "ai_engineer": {
+      "title": "AI / Generative AI Engineer",
+      "summary": "AI Engineer with hands-on experience building production-ready, end-to-end Generative AI and Agentic AI systems. Specialises in LLM fine-tuning (SFT, DPO, QLoRA), RAG pipeline design (hybrid retrieval, reranking, RAGAS evaluation), and multi-agent architectures using LangGraph and MCP. Proven ability to take AI systems from research to deployment with measurable metric improvements, CI/CD regression gating, and scalable MLOps practices.",
+      "skills": [
+        "LangChain, LangGraph, LlamaIndex, CrewAI, AutoGen, Hugging Face",
+        "RAG, Agentic RAG, Graph RAG, Prompt Engineering, MCP, RAGAS, LangSmith",
+        "LLM Fine-Tuning: SFT, PEFT, LoRA, QLoRA, DPO, GRPO, RLHF, RLAIF",
+        "Unsloth, LlamaFactory, Axolotl, TRL",
+        "Vector DBs: FAISS, Pinecone, ChromaDB, Neo4j",
+        "OpenAI API, Claude/Anthropic API, Gemini API, function calling",
+        "Multi-Agent Systems, ReAct Agents, Memory-Augmented Agents, Tool-Using Agents",
+        "PyTorch, TensorFlow, Keras, Scikit-Learn, XGBoost",
+        "MLOps: MLflow, DVC, W&B, LangSmith, GitHub Actions CI/CD, Docker, Kubernetes, Airflow",
+        "AWS (EC2, S3, SageMaker, Lambda), Azure, GCP",
+        "FastAPI, Flask, Streamlit, PostgreSQL, MySQL, MongoDB, Redis",
+        "Python, SQL, Power BI, Matplotlib"
+      ],
+      "experience": [
+        {
+          "company": "iNeuron",
+          "role": "Generative AI Engineer Intern",
+          "period": "Sep 2023 – Mar 2024",
+          "highlights": [
+            "Built production Multimodal RAG pipeline (PDF/DOCX/PPTX/TXT + OCR + Gemini summarisation)",
+            "Hybrid retrieval: FAISS + BM25 with cross-encoder reranking for top-5 relevance",
+            "Automated RAGAS CI/CD gating (faithfulness ≥0.85, relevance ≥0.80, precision ≥0.75, recall ≥0.70)",
+            "LangSmith observability: query tracing, latency p50/p95/p99, token cost monitoring"
+          ]
+        }
+      ],
+      "projects": [
+        {
+          "name": "Agentic AI Video Synthesizer",
+          "url": "github.com/rajubaddela1234/Agentic-AI-Video-Synthesizer",
+          "highlights": [
+            "8-agent LangGraph pipeline: Question Decomposer, React Supervisor, YouTube, Tavily, arXiv, Completeness, Synthesis, Feedback",
+            "Tri-modal retrieval: YouTube transcripts, Tavily web, arXiv papers — 15+ sources per query",
+            "Llama 4 Maverick via Groq — 6-10 min script, self-scoring 1-10, auto-rewrite up to 3 iterations",
+            "D-ID avatar video, Google TTS, Streamlit UI, LangSmith tracing"
+          ]
+        },
+        {
+          "name": "Domain-Specific LLM Fine-Tuning",
+          "url": "github.com/rajubaddela1234/llmf",
+          "highlights": [
+            "3-stage pharma pipeline on TinyLlama-1.1B, 4-bit QLoRA, ~1.1M params (~0.18%), T4 GPU <6GB",
+            "ROUGE-L: 0.0924 → 0.1637, BLEU-4: 1.58 → 2.60, BERTScore F1: 0.8226 → 0.8422",
+            "DPO on 400 pharma preference pairs — improved alignment, reduced hallucinations",
+            "Unsloth (2x faster), LlamaFactory, Axolotl, FSDP scaling"
+          ]
+        },
+        {
+          "name": "Multimodal MCP Research Assistant",
+          "url": "github.com/rajubaddela1234/mcp",
+          "highlights": [
+            "Whisper STT + Gemini Vision, 5-node LangGraph ReAct agent",
+            "MCP tools: Tavily search, arXiv, sandboxed Python, FAISS semantic memory",
+            "FastAPI SSE streaming + Google TTS — full voice-in/voice-out",
+            "3-layer memory: MemorySaver (short-term), SQLite (persistent), FAISS IndexFlatIP (semantic)"
+          ]
+        },
+        {
+          "name": "Multimodal RAG System",
+          "url": "github.com/rajubaddela1234/mrs",
+          "highlights": [
+            "FAISS IVFFlat (1024 clusters) + BM25 + cross-encoder reranking (ms-marco-MiniLM-L-6-v2)",
+            "RAGAS CI/CD gating via GitHub Actions",
+            "LangSmith observability with Gemini token cost monitoring"
+          ]
+        }
+      ],
+      "certifications": ["Building RAG Agents with LLMs – Nvidia (2025)", "Google AI Essentials – Google (2025)", "Machine Learning – Stanford University (2023)"]
+    },
+
+    "data_analyst": {
+      "title": "Data Analyst",
+      "summary": "Data Analyst with hands-on experience across the full analytics lifecycle — data cleaning, EDA, SQL querying, interactive dashboard development, and strategic reporting. Proven ability to merge multi-source datasets, engineer features, and surface actionable insights across sales, retail, and hospitality domains.",
+      "skills": [
+        "Python, SQL, Advanced Excel (Pivot Tables, XLOOKUP, INDEX MATCH, VLOOKUP, Power Pivot, Power Query)",
+        "Power BI, Tableau, DAX, Star Schema Modelling, Dashboard Development, Executive Reporting",
+        "EDA, Data Cleaning, Feature Engineering, Statistical Analysis, Hypothesis Testing, A/B Testing",
+        "KPI Reporting, Forecasting, Trend Analysis, Customer Segmentation, Correlation Analysis",
+        "PostgreSQL, MySQL, MongoDB — Joins, CTEs, Window Functions, Aggregations, Views, Stored Procedures",
+        "NumPy, Pandas, SciPy, Matplotlib, Seaborn, Plotly",
+        "Scikit-Learn, XGBoost, MLOps basics, AWS, FastAPI, Flask, Streamlit"
+      ],
+      "experience": [
+        {
+          "company": "KPMG",
+          "role": "Data Analytics Intern",
+          "period": "Sep 2023 – Mar 2024",
+          "highlights": [
+            "Analysed 5,000+ customer records in Python/Excel for marketing insights (NSW and Victoria)",
+            "Built K-means segmentation model for targeted marketing campaigns",
+            "Created Tableau dashboard (8 visualisations) — reporting time cut from 2 days to 2 hours"
+          ]
+        }
+      ],
+      "projects": [
+        {
+          "name": "Regional Sales Analytics Dashboard (Acme Co. USA)",
+          "highlights": [
+            "End-to-end EDA on 64,104 orders (2014–2018), 175 customers, 30 products, 47 US states, 3 channels",
+            "Merged 6 raw tables (Sales Orders, Customers, Products, Regions, State Regions, 2017 Budgets)",
+            "$1.2bn revenue, $461.8M profit, 37.36% margin, 64K orders",
+            "Seasonal cycling $24M–$26M, May–June peaks; Products 26&25 = ~25% revenue; CA = $228.8M (19.5%)",
+            "3-page Power BI dashboard with cross-page slicers; 5 strategic recommendations"
+          ]
+        },
+        {
+          "name": "Customer Shopping Behaviour Analysis",
+          "highlights": [
+            "EDA on 3,900 retail transactions (18 features) in Python + PostgreSQL",
+            "10 SQL queries: revenue by gender, top 5 products by rating, CTE segmentation (Loyal:3116/Returning:701/New:83)",
+            "Male revenue $157,890 vs Female $75,191; Young Adults led ($62,143); only 27% subscribed",
+            "Power BI dashboard: KPI cards (3.9K customers, $59.76 avg purchase, 3.75 avg rating)"
+          ]
+        },
+        {
+          "name": "Revenue Insights — AtliQ Grands (Hospitality)",
+          "highlights": [
+            "Star-schema across 5 tables (134,590 bookings, 25 properties, 4 cities, May–Jul)",
+            "26 DAX measures: Revenue, Occupancy%, ADR, RevPAR, DSRN, Realisation%, WoW change%",
+            "₹1.69bn revenue — Luxury 61.6%, Mumbai ₹668M, Delhi occupancy 60.5%",
+            "24.8% cancellation rate; weekend RevPAR (₹7,972) > weekday (₹7,083)"
+          ]
+        }
+      ],
+      "certifications": ["Tableau – Simplilearn (2024)", "Machine Learning – Stanford University (2025)", "Python – HackerRank (2022)"]
+    },
+
+    "data_scientist": {
+      "title": "Data Scientist",
+      "summary": "Data Scientist with hands-on experience across the full data science lifecycle — from EDA and statistical modelling to ML, deep learning, NLP, computer vision, and production deployment. Proven track record with measurable outcomes. Additional experience in Generative AI, LLM fine-tuning, and RAG.",
+      "skills": [
+        "Python, SQL, Advanced Excel, NumPy, Pandas, SciPy",
+        "Scikit-Learn, XGBoost, LightGBM, Supervised/Unsupervised Learning, EDA, Feature Engineering",
+        "Hyperparameter Tuning (GridSearchCV, RandomSearchCV, Keras Tuner), Statistical Modelling, A/B Testing",
+        "TensorFlow, Keras, PyTorch, LSTM, CNN, RNN, GRU, YOLOv8, R-CNN, Transfer Learning (ResNet-50)",
+        "Transformers (BERT, GPT), NLTK, TF-IDF, Cosine Similarity, Text Classification",
+        "LangChain, LangGraph, RAG, LLM Fine-Tuning (SFT, LoRA, QLoRA, DPO), FAISS, Pinecone, Agentic AI",
+        "MLflow, DVC, W&B, GitHub Actions CI/CD, Airflow, Docker, Kubernetes",
+        "AWS (EC2, S3, SageMaker, ECR, Lambda), Azure, GCP, PostgreSQL, MySQL, MongoDB, Redis",
+        "Tableau, Power BI, Matplotlib, Seaborn, Plotly, FastAPI, Flask, Streamlit"
+      ],
+      "experience": [
+        {
+          "company": "KPMG",
+          "role": "Data Analytics Intern",
+          "period": "Sep 2023 – Mar 2024",
+          "highlights": [
+            "5,000+ customer records analysis, K-means segmentation, Tableau dashboard"
+          ]
+        }
+      ],
+      "projects": [
+        {
+          "name": "Credit Card Fraud Detection (AWS CI/CD)",
+          "url": "github.com/rajubaddela1234/credit",
+          "highlights": [
+            "284,807 transactions, 0.17% fraud rate, SMOTE, 7 classifiers via 3-fold GridSearchCV",
+            "XGBClassifier: F1=0.9534, ROC-AUC=0.9841, 95% accuracy",
+            "Docker + AWS EC2 + 3-stage GitHub Actions CI/CD (lint→ECR→EC2), Flask API"
+          ]
+        },
+        {
+          "name": "TCS Stock Price Prediction",
+          "url": "github.com/rajubaddela1234/stock",
+          "highlights": [
+            "15 years TCS.NS data (3,766 days), 100/200-day MAs, ACF/PACF, seasonal decomposition",
+            "4-layer LSTM, 100-day window, EarlyStopping → R²:0.8842, MAE:3.74%",
+            "Keras Tuner → R²:0.9291, MAE:₹98.58 on 1,130 test samples; Streamlit deployment"
+          ]
+        },
+        {
+          "name": "AI Traffic Monitoring (YOLOv8)",
+          "url": "github.com/rajubaddela1234/traffic",
+          "highlights": [
+            "YOLOv8m on 64.8s/3,240-frame video, counting zone band (55-65% frame height)",
+            "82 vehicles detected: car:49, truck:14, moto:16, bus:3 at 68.8% avg confidence",
+            "Persistent multi-object tracking, moto threshold 0.20, 9-panel dashboard"
+          ]
+        },
+        {
+          "name": "Multimodal RAG System",
+          "url": "github.com/rajubaddela1234/mrs",
+          "highlights": [
+            "FAISS + BM25 + cross-encoder reranking, RAGAS CI/CD gating, LangSmith"
+          ]
+        },
+        {
+          "name": "Movie Recommendation System",
+          "url": "github.com/rajubaddela1234/mo",
+          "highlights": [
+            "45,447 movies (TMDB), TF-IDF (50K features), cosine similarity, WordNet lemmatisation",
+            "FastAPI 6 endpoints, TMDB API integration, Streamlit frontend, deployed on Render"
+          ]
+        }
+      ],
+      "certifications": ["Machine Learning – Stanford University (2025)", "Tableau – Simplilearn (2024)", "AI in Python – Great Learning (2023)", "Python – HackerRank (2022)"]
+    },
+
+    "ml_engineer": {
+      "title": "Machine Learning Engineer",
+      "summary": "ML Engineer with proven experience building and deploying end-to-end ML systems — regression, classification, time-series, NLP, and deep learning. Strong MLOps practices across MLflow, DVC, Docker, and CI/CD on AWS and Azure. Additional experience in Generative AI, LLM fine-tuning, and RAG.",
+      "skills": [
+        "Python, SQL, Advanced Excel, NumPy, Pandas, SciPy",
+        "Scikit-Learn, XGBoost, LightGBM, Feature Engineering, GridSearchCV, Keras Tuner, Bayesian methods",
+        "TensorFlow, Keras, PyTorch, LSTM, CNN, RNN, GRU, BERT, GPT, NLTK, TF-IDF, YOLOv8",
+        "LangChain, LangGraph, RAG, LLM Fine-Tuning (SFT, LoRA, QLoRA, DPO), FAISS, Agentic AI",
+        "MLflow, DVC, W&B, GitHub Actions CI/CD, Airflow, Docker, Kubernetes",
+        "AWS (EC2, S3, SageMaker, ECR, Lambda), Azure (App Service, ACR), GCP",
+        "PostgreSQL, MySQL, MongoDB, Redis, FastAPI, Flask, Streamlit, REST APIs",
+        "Tableau, Power BI, Matplotlib, Seaborn, Plotly"
+      ],
+      "experience": [
+        {
+          "company": "iNeuron",
+          "role": "Machine Learning Intern",
+          "period": "Sep 2023 – Mar 2024",
+          "highlights": [
+            "Credit Card Fraud Detection: 284K+ transactions, SMOTE, XGBoost F1:0.95, ROC-AUC:0.98",
+            "Docker + AWS EC2 + GitHub Actions CI/CD, Flask API"
+          ]
+        },
+        {
+          "company": "KPMG",
+          "role": "Data Analytics Intern",
+          "period": "Jan 2022 – May 2023",
+          "highlights": [
+            "5,000+ records Python/Excel analysis, K-means segmentation, Tableau dashboard (2 days → 2 hours)"
+          ]
+        }
+      ],
+      "projects": [
+        {
+          "name": "Diamond Price Prediction (MLOps Pipeline)",
+          "url": "github.com/rajubaddela1234/mlp",
+          "highlights": [
+            "193K+ records, ColumnTransformer (OrdinalEncoder + StandardScaler, 9 features)",
+            "4 models: Linear/Ridge/Lasso/ElasticNet — MLflow on DagsHub: R²:0.9373, RMSE:1009.29, MAE:672.17",
+            "DVC pipeline + Airflow DAGs + Docker Compose + Azure App Service CI/CD"
+          ]
+        },
+        {
+          "name": "TCS Stock Prediction (LSTM + Keras Tuner)",
+          "url": "github.com/rajubaddela1234/stock",
+          "highlights": [
+            "4-layer LSTM, MinMaxScaler, EarlyStopping → R²:0.8842, MAE:3.74%",
+            "Keras Tuner RandomSearch → R²:0.9291, MAE:₹98.58; Streamlit deployment"
+          ]
+        },
+        {
+          "name": "Credit Card Fraud Detection (AWS CI/CD)",
+          "url": "github.com/rajubaddela1234/credit",
+          "highlights": [
+            "XGBoost F1:0.9534, ROC-AUC:0.9841, Docker + AWS EC2 + GitHub Actions 3-stage CI/CD"
+          ]
+        },
+        {
+          "name": "Multimodal RAG System",
+          "url": "github.com/rajubaddela1234/mrs",
+          "highlights": [
+            "FAISS + BM25 + cross-encoder, RAGAS gating, LangSmith observability"
+          ]
+        },
+        {
+          "name": "Movie Recommendation System",
+          "url": "github.com/rajubaddela1234/mo",
+          "highlights": [
+            "TF-IDF cosine similarity on 45K movies, FastAPI + Streamlit + TMDB API, deployed on Render"
+          ]
+        }
+      ],
+      "certifications": ["Machine Learning – Stanford University (2025)", "AI in Python – Great Learning (2023)", "Python – HackerRank (2022)"]
+    }
+  }
 }
