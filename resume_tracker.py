@@ -778,7 +778,8 @@ def setup_email():
 def setup_scheduler():
     python = sys.executable
     script = os.path.abspath(__file__)
-    tr     = f'"{python}" "{script}"'
+    # Windows schtasks /tr needs escaped inner quotes around paths with spaces
+    tr = f'\\"{python}\\" \\"{script}\\"'
 
     print(f"\n{'='*60}")
     print("  Setting up Windows Task Scheduler")
@@ -786,42 +787,23 @@ def setup_scheduler():
     print(f"  Script : {script}")
     print(f"{'='*60}\n")
 
-    # ── Daily timed tasks ────────────────────────────────────────
-    daily_tasks = [
-        ("ResumeTracker_Morning_7AM",  "07:00", "morning",  "7 AM motivation email"),
-        ("ResumeTracker_Midday_12PM",  "12:00", "midday",   "12 PM progress email"),
-    ]
-    for name, time_, cmd, desc in daily_tasks:
-        cmd_str = f'schtasks /create /tn "{name}" /tr \'{tr} {cmd}\' /sc daily /st {time_} /f'
-        r = subprocess.run(cmd_str, shell=True, capture_output=True, text=True)
-        status = "✅" if r.returncode == 0 else "❌"
-        print(f"  {status}  [{time_}] {desc}")
+    def register(name, sc_flags, arg, desc):
+        cmd = f'schtasks /create /tn "{name}" /tr "{tr} {arg}" {sc_flags} /f'
+        r   = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+        tag = "[OK]  " if r.returncode == 0 else "[FAIL]"
+        print(f"  {tag}  {desc}")
         if r.returncode != 0:
-            print(f"       {r.stderr.strip()}")
+            print(f"         {r.stderr.strip()}")
 
-    # ── Auto-scan: on login ───────────────────────────────────────
-    login_cmd = f'schtasks /create /tn "ResumeTracker_Scan_OnLogin" /tr \'{tr} scan\' /sc onlogon /f'
-    r = subprocess.run(login_cmd, shell=True, capture_output=True, text=True)
-    status = "✅" if r.returncode == 0 else "❌"
-    print(f"  {status}  [On Login ] Auto-scan resumes when PC starts")
-    if r.returncode != 0:
-        print(f"       {r.stderr.strip()}")
-
-    # ── Auto-scan: every 30 minutes ──────────────────────────────
-    repeat_cmd = (
-        f'schtasks /create /tn "ResumeTracker_Scan_Every30Min" '
-        f'/tr \'{tr} scan\' /sc minute /mo 30 /f'
-    )
-    r = subprocess.run(repeat_cmd, shell=True, capture_output=True, text=True)
-    status = "✅" if r.returncode == 0 else "❌"
-    print(f"  {status}  [Every 30m] Auto-scan resumes every 30 minutes")
-    if r.returncode != 0:
-        print(f"       {r.stderr.strip()}")
+    register("ResumeTracker_Morning_7AM",     "/sc daily /st 07:00", "morning", "[07:00] 7 AM motivation email")
+    register("ResumeTracker_Midday_12PM",     "/sc daily /st 12:00", "midday",  "[12:00] 12 PM progress email")
+    register("ResumeTracker_Scan_OnLogin",    "/sc onlogon",         "scan",    "[Login ] Auto-scan resumes on PC startup")
+    register("ResumeTracker_Scan_Every30Min", "/sc minute /mo 30",   "scan",    "[Every 30min] Auto-scan new resumes")
 
     print(f"\n  How it works:")
-    print(f"    • Drop a resume .docx into any folder under {BASE}")
-    print(f"    • Within 30 min (or on next login) it's auto-classified & pushed to GitHub")
-    print(f"    • Scheduled emails always show the latest real count")
+    print(f"    - Drop a .docx into any folder under {BASE}")
+    print(f"    - Within 30 min (or on next login) it is auto-classified and pushed to GitHub")
+    print(f"    - Scheduled emails always show the real count")
     print(f"\n  To remove auto-scan tasks:")
     print(f"    schtasks /delete /tn ResumeTracker_Scan_OnLogin /f")
     print(f"    schtasks /delete /tn ResumeTracker_Scan_Every30Min /f")
