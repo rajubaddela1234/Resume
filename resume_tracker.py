@@ -339,6 +339,19 @@ $n.Dispose()
 
 # ─── Email builders ───────────────────────────────────────────────────────────
 
+def _html_section(title, content, bg="#eaf4fb", border="#2980b9", title_color="#1a5276",
+                   text_color="#2c3e50", padding="0 28px 20px"):
+    """Reusable coloured card section for emails."""
+    return (
+        f"<tr><td style='padding:{padding};'>"
+        f"<div style='background:{bg};border-left:5px solid {border};"
+        f"border-radius:8px;padding:18px 20px;'>"
+        f"<p style='margin:0 0 10px;font-size:12px;font-weight:bold;color:{title_color};"
+        f"text-transform:uppercase;letter-spacing:1.5px;'>{title}</p>"
+        f"<p style='margin:0;font-size:14px;color:{text_color};line-height:1.8;'>{content}</p>"
+        f"</div></td></tr>"
+    )
+
 def build_morning_html():
     applied    = get_today_total()
     data       = get_today_data()
@@ -347,15 +360,16 @@ def build_morning_html():
     llm        = generate_llm_content("morning", applied, roles_data, remaining)
 
     if llm:
-        headline    = llm.get("headline", "Rise and Dominate Today")
-        body        = llm.get("body", "")
-        strategy    = llm.get("strategy", "")
-        affirmation = llm.get("affirmation", "")
-        color       = "#1a5276"
+        headline       = llm.get("headline", "Rise and Dominate Today")
+        body           = llm.get("body", "")
+        market_intel   = llm.get("market_intel", "")
+        battle_plan    = llm.get("battle_plan", "")
+        skill_of_day   = llm.get("skill_of_the_day", "")
+        affirmation    = llm.get("affirmation", "")
+        color          = "#1a5276"
     else:
         headline, body, color = get_daily_motivation()
-        strategy    = ""
-        affirmation = ""
+        market_intel = battle_plan = skill_of_day = affirmation = ""
 
     date_str   = today_display()
     roles_list = "".join(
@@ -363,57 +377,71 @@ def build_morning_html():
         for label in ROLES.values()
     )
 
-    strategy_block = f"""
-  <tr><td style='padding:0 28px 20px;'>
-    <div style='background:#eaf4fb;border-left:5px solid #2980b9;border-radius:8px;padding:18px 20px;'>
-      <p style='margin:0 0 8px;font-size:14px;font-weight:bold;color:#1a5276;
-                text-transform:uppercase;letter-spacing:1px;'>Today's Strategy</p>
-      <p style='margin:0;font-size:14px;color:#2c3e50;line-height:1.7;'>{strategy}</p>
-    </div>
-  </td></tr>""" if strategy else ""
+    market_block   = _html_section(
+        "London Market Intelligence",
+        market_intel,
+        bg="#f0f8ff", border="#1a5276", title_color="#1a5276"
+    ) if market_intel else ""
 
-    affirmation_block = f"""
-  <tr><td style='padding:0 28px 24px;'>
-    <div style='background:linear-gradient(135deg,#1a5276,#6e2f8c);border-radius:10px;
-                padding:18px 24px;text-align:center;'>
-      <p style='margin:0;font-size:15px;font-style:italic;color:#fff;line-height:1.6;'>
-        &ldquo;{affirmation}&rdquo;
-      </p>
-    </div>
-  </td></tr>""" if affirmation else ""
+    battle_block   = _html_section(
+        "Today's Battle Plan",
+        battle_plan,
+        bg="#eaf4fb", border="#2980b9", title_color="#1a5276"
+    ) if battle_plan else ""
 
-    return f"""
-<!DOCTYPE html>
+    skill_block    = _html_section(
+        "Skill to Lead With Today",
+        skill_of_day,
+        bg="#fef9e7", border="#f39c12", title_color="#d68910"
+    ) if skill_of_day else ""
+
+    affirmation_block = (
+        "<tr><td style='padding:0 28px 24px;'>"
+        "<div style='background:linear-gradient(135deg,#1a5276,#6e2f8c);border-radius:10px;"
+        "padding:20px 24px;text-align:center;'>"
+        f"<p style='margin:0;font-size:15px;font-style:italic;color:#fff;line-height:1.8;'>"
+        f"&ldquo;{affirmation}&rdquo;</p>"
+        "</div></td></tr>"
+    ) if affirmation else ""
+
+    return f"""<!DOCTYPE html>
 <html>
 <head><meta charset='UTF-8'></head>
 <body style='margin:0;padding:0;background:#f0f3f7;font-family:Arial,sans-serif;'>
 <table width='100%' cellpadding='0' cellspacing='0'
-       style='max-width:600px;margin:30px auto;background:#fff;border-radius:12px;
-              overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.12);'>
+       style='max-width:620px;margin:30px auto;background:#fff;border-radius:14px;
+              overflow:hidden;box-shadow:0 6px 30px rgba(0,0,0,0.13);'>
 
-  <tr><td style='background:{color};padding:36px 24px;text-align:center;'>
-    <p style='color:#aed6f1;margin:0 0 6px;font-size:13px;letter-spacing:2px;text-transform:uppercase;'>
-      Good Morning, Raju &middot; {date_str}
+  <tr><td style='background:{color};padding:38px 28px 30px;text-align:center;'>
+    <p style='color:#aed6f1;margin:0 0 8px;font-size:12px;letter-spacing:2.5px;text-transform:uppercase;'>
+      Good Morning, Raju &nbsp;&middot;&nbsp; {date_str}
     </p>
-    <h1 style='color:#fff;margin:0;font-size:26px;line-height:1.3;'>{headline}</h1>
+    <h1 style='color:#fff;margin:0;font-size:28px;line-height:1.3;font-weight:800;'>{headline}</h1>
   </td></tr>
 
-  <tr><td style='padding:28px 28px 16px;'>
-    <p style='font-size:16px;color:#2c3e50;line-height:1.8;margin:0;'>{body}</p>
+  <tr><td style='padding:28px 28px 20px;'>
+    <p style='font-size:15px;color:#2c3e50;line-height:1.9;margin:0;'>{body}</p>
   </td></tr>
 
-  {strategy_block}
+  {market_block}
+  {battle_block}
+  {skill_block}
 
   <tr><td style='padding:4px 28px 20px;'>
-    <div style='background:linear-gradient(135deg,{color},#2980b9);border-radius:10px;
-                padding:20px;text-align:center;'>
-      <p style='color:#fff;margin:0;font-size:26px;font-weight:bold;'>TODAY'S GOAL: {GOAL} APPLICATIONS</p>
-      <p style='color:#d6eaf8;margin:6px 0 0;font-size:14px;'>Across 5 roles — AI &middot; DA &middot; DS &middot; ML &middot; SE</p>
+    <div style='background:linear-gradient(135deg,{color},#2980b9);border-radius:12px;
+                padding:22px;text-align:center;'>
+      <p style='color:#fff;margin:0;font-size:28px;font-weight:bold;letter-spacing:1px;'>
+        TODAY&rsquo;S GOAL: {GOAL} APPLICATIONS
+      </p>
+      <p style='color:#d6eaf8;margin:8px 0 0;font-size:14px;'>
+        AI &nbsp;&middot;&nbsp; DA &nbsp;&middot;&nbsp; DS &nbsp;&middot;&nbsp; ML &nbsp;&middot;&nbsp; SE
+      </p>
     </div>
   </td></tr>
 
   <tr><td style='padding:0 28px 20px;'>
-    <p style='margin:0 0 10px;font-size:15px;font-weight:bold;color:#2c3e50;'>Apply across all 5 roles today:</p>
+    <p style='margin:0 0 10px;font-size:14px;font-weight:bold;color:#2c3e50;text-transform:uppercase;
+              letter-spacing:1px;'>5 Roles to Attack Today</p>
     <ul style='margin:0;padding-left:20px;'>
       {roles_list}
     </ul>
@@ -422,267 +450,323 @@ def build_morning_html():
   {affirmation_block}
 
 </table>
-<p style='text-align:center;font-size:11px;color:#bbb;margin-top:12px;'>
-  Job Application Tracker &middot; Baddela Raju &middot; {date_str}
+<p style='text-align:center;font-size:11px;color:#bbb;margin-top:14px;'>
+  Job Application Tracker &nbsp;&middot;&nbsp; Baddela Raju &nbsp;&middot;&nbsp; {date_str}
 </p>
 </body></html>
 """
 
 def build_midday_html(applied, roles_data, label_time="12:00 PM"):
-    remaining = max(0, GOAL - applied)
-    pct       = min(100, int(applied / GOAL * 100))
-    is_goal   = applied >= GOAL
-    bar_color = "#27ae60" if is_goal else "#e67e22" if pct >= 50 else "#e74c3c"
-    date_str  = today_display()
+    remaining  = max(0, GOAL - applied)
+    pct        = min(100, int(applied / GOAL * 100))
+    is_goal    = applied >= GOAL
+    bar_color  = "#27ae60" if is_goal else "#e67e22" if pct >= 50 else "#e74c3c"
+    date_str   = today_display()
+    is_midnight = label_time == "12:00 AM"
+    email_kind  = "midnight" if is_midnight else "midday"
 
     if is_goal:
         header_bg  = "#145a32"
-        header_txt = f"GOAL CRUSHED — {applied}/{GOAL} by {label_time}!"
-        sub_txt    = "You hit the daily target — extraordinary!"
+        header_txt = f"GOAL CRUSHED — {applied}/{GOAL}!"
+        sub_txt    = f"You hit the target &middot; {label_time} UK"
     elif applied >= 15:
         header_bg  = "#1a5276"
-        header_txt = f"{applied}/{GOAL} Done — Strong Morning!"
-        sub_txt    = f"{label_time} Summary · {date_str}"
+        header_txt = f"{applied}/{GOAL} — Strong Progress"
+        sub_txt    = f"{label_time} UK &middot; {date_str}"
     elif applied >= 5:
         header_bg  = "#784212"
-        header_txt = f"{applied}/{GOAL} Done — Push Needed"
-        sub_txt    = f"{label_time} Summary · {date_str}"
+        header_txt = f"{applied}/{GOAL} — Push Required"
+        sub_txt    = f"{label_time} UK &middot; {date_str}"
     else:
         header_bg  = "#922b21"
-        header_txt = f"{applied}/{GOAL} — Alert!"
-        sub_txt    = f"Day half gone · {date_str}"
+        header_txt = f"{applied}/{GOAL} — Urgent Alert"
+        sub_txt    = f"{label_time} UK &middot; {date_str}"
 
+    # Default fallback text (overridden by LLM below)
     if is_goal:
-        end_color = "#27ae60"
-        end_title = "Morning Champion — Goal Achieved!"
-        end_body  = (
-            f"You applied to <b>{applied} jobs</b> and crushed your daily goal of {GOAL}. "
-            "That level of discipline is exactly what separates people who land jobs from people who don't. "
-            "Take a short break — you've absolutely earned it."
-        )
+        main_color = "#27ae60"
+        main_title = "Goal Achieved — Outstanding Discipline!"
+        main_body  = (f"You applied to <b>{applied} jobs</b> today and crushed the {GOAL}-application goal. "
+                      "This is the level of consistency that lands offers.")
     elif applied >= 15:
-        end_color = "#e67e22"
-        end_title = "Great Progress — Finish It This Afternoon!"
-        end_body  = (
-            f"<b>{applied} applications</b> done! Just <b>{remaining} more</b> to hit your daily goal. "
-            "Block one focused hour and power through."
-        )
+        main_color = "#e67e22"
+        main_title = "Strong Day — Close It Out!"
+        main_body  = (f"<b>{applied} applications</b> done, {remaining} more to reach {GOAL}. "
+                      "One focused hour will close the gap.")
     elif applied >= 5:
-        end_color = "#c0392b"
-        end_title = "Push Hard!"
-        end_body  = (
-            f"You have <b>{applied} applications</b> so far. You need <b>{remaining} more</b> "
-            "to hit your goal — close every distraction and apply non-stop."
-        )
+        main_color = "#c0392b"
+        main_title = "Push Harder Now!"
+        main_body  = (f"<b>{applied} applications</b> so far — you need {remaining} more. "
+                      "Close all distractions and apply relentlessly.")
     else:
-        end_color = "#922b21"
-        end_title = "Urgent — The Clock Is Running. Act NOW!"
-        end_body  = (
-            f"<b>{'Zero' if applied == 0 else str(applied)} applications</b> so far, Raju. "
-            "Your dream job will not find you. Set a 60-minute timer and apply to at least 15 jobs right now."
-        )
+        main_color = "#922b21"
+        main_title = f"{'Zero' if applied == 0 else applied} Applications — Act Now!"
+        main_body  = ("Your dream job will not find you. Set a 60-minute timer and apply to at least 10 jobs right now.")
 
-    email_kind    = "midnight" if label_time == "12:00 AM" else "check"
-    llm           = generate_llm_content(email_kind, applied, roles_data, remaining)
-    action_plan   = ""
-    role_insight  = ""
-    tomorrow_plan = ""
-    strength      = ""
+    llm = generate_llm_content(email_kind, applied, roles_data, remaining)
+
     if llm:
-        end_title     = llm.get("headline", end_title)
-        end_body      = llm.get("body", end_body)
-        action_plan   = llm.get("action_plan", "")
-        role_insight  = llm.get("role_insight", "")
-        tomorrow_plan = llm.get("tomorrow_plan", "")
-        strength      = llm.get("strength", "")
-
-    action_plan_block = (
-        "<tr><td style='padding:0 24px 16px;'>"
-        "<div style='background:#eafaf1;border-left:5px solid #27ae60;border-radius:8px;padding:18px 20px;'>"
-        "<p style='margin:0 0 8px;font-size:13px;font-weight:bold;color:#1e8449;"
-        "text-transform:uppercase;letter-spacing:1px;'>Next 2 Hours — Your Action Plan</p>"
-        f"<p style='margin:0;font-size:14px;color:#2c3e50;line-height:1.7;'>{action_plan}</p>"
-        "</div></td></tr>"
-    ) if action_plan else ""
-
-    role_insight_block = (
-        "<tr><td style='padding:0 24px 16px;'>"
-        "<div style='background:#fef9e7;border-left:5px solid #f39c12;border-radius:8px;padding:16px 20px;'>"
-        "<p style='margin:0 0 6px;font-size:13px;font-weight:bold;color:#d68910;"
-        "text-transform:uppercase;letter-spacing:1px;'>Role Focus Insight</p>"
-        f"<p style='margin:0;font-size:14px;color:#2c3e50;line-height:1.7;'>{role_insight}</p>"
-        "</div></td></tr>"
-    ) if role_insight else ""
-
-    tomorrow_plan_block = (
-        "<tr><td style='padding:0 24px 16px;'>"
-        "<div style='background:#eaf4fb;border-left:5px solid #2980b9;border-radius:8px;padding:18px 20px;'>"
-        "<p style='margin:0 0 8px;font-size:13px;font-weight:bold;color:#1a5276;"
-        "text-transform:uppercase;letter-spacing:1px;'>Tomorrow's Game Plan</p>"
-        f"<p style='margin:0;font-size:14px;color:#2c3e50;line-height:1.7;'>{tomorrow_plan}</p>"
-        "</div></td></tr>"
-    ) if tomorrow_plan else ""
-
-    strength_block = (
-        "<tr><td style='padding:0 24px 24px;'>"
-        "<div style='background:linear-gradient(135deg,#1a5276,#6e2f8c);border-radius:10px;padding:18px 24px;'>"
-        "<p style='margin:0 0 8px;font-size:13px;font-weight:bold;color:#aed6f1;"
-        "text-transform:uppercase;letter-spacing:1px;'>Skill to Spotlight Tomorrow</p>"
-        f"<p style='margin:0;font-size:14px;color:#fff;line-height:1.7;'>{strength}</p>"
-        "</div></td></tr>"
-    ) if strength else ""
+        main_title = llm.get("headline", main_title)
+        main_body  = llm.get("body", main_body)
 
     roles_rows = ""
     for key, label in ROLES.items():
         count = roles_data.get(key, 0)
+        bar_w = min(100, int(count / max(applied, 1) * 100)) if applied else 0
         roles_rows += (
-            f"<tr><td style='padding:10px 16px;border-bottom:1px solid #eee;'>{label}</td>"
-            f"<td style='padding:10px 16px;border-bottom:1px solid #eee;text-align:center;"
-            f"font-weight:bold;color:#2c3e50;'>{count}</td></tr>"
+            f"<tr><td style='padding:10px 16px;border-bottom:1px solid #eee;font-size:14px;'>{label}</td>"
+            f"<td style='padding:10px 16px;border-bottom:1px solid #eee;'>"
+            f"<div style='display:flex;align-items:center;gap:8px;'>"
+            f"<div style='flex:1;background:#ecf0f1;border-radius:20px;height:8px;'>"
+            f"<div style='width:{bar_w}%;background:{bar_color};height:100%;border-radius:20px;'></div></div>"
+            f"<span style='font-weight:bold;color:#2c3e50;min-width:20px;'>{count}</span>"
+            f"</div></td></tr>"
         )
 
-    return f"""
-<!DOCTYPE html>
+    # ── MIDDAY-specific sections ──────────────────────────────────────────
+    if not is_midnight and llm:
+        half_verdict  = llm.get("half_time_verdict", "")
+        aft_plan      = llm.get("afternoon_battle_plan", "")
+        role_gap_fix  = llm.get("role_gap_fix", "")
+        personal_edge = llm.get("personal_edge", "")
+
+        extra_sections = "".join(filter(None, [
+            _html_section("Half-Time Verdict", half_verdict,
+                          bg="#fff8f0", border="#e67e22", title_color="#d35400",
+                          padding="0 24px 16px") if half_verdict else "",
+            _html_section("Afternoon Battle Plan", aft_plan,
+                          bg="#eafaf1", border="#27ae60", title_color="#1e8449",
+                          padding="0 24px 16px") if aft_plan else "",
+            _html_section("Role Gap — Fix It Now", role_gap_fix,
+                          bg="#fef9e7", border="#f39c12", title_color="#d68910",
+                          padding="0 24px 16px") if role_gap_fix else "",
+            _html_section("Your Personal Edge This Afternoon", personal_edge,
+                          bg="#f5eef8", border="#8e44ad", title_color="#6c3483",
+                          padding="0 24px 24px") if personal_edge else "",
+        ]))
+
+    # ── MIDNIGHT-specific sections ────────────────────────────────────────
+    elif is_midnight and llm:
+        day_verdict     = llm.get("day_verdict", "")
+        perf_context    = llm.get("performance_context", "")
+        tmrw_plan       = llm.get("tomorrow_battle_plan", "")
+        skill_weapon    = llm.get("skill_weapon", "")
+        mindset_reset   = llm.get("mindset_reset", "")
+
+        extra_sections = "".join(filter(None, [
+            _html_section("Day Verdict", day_verdict,
+                          bg="#fff8f0", border="#e67e22", title_color="#d35400",
+                          padding="0 24px 16px") if day_verdict else "",
+            _html_section("Performance Context", perf_context,
+                          bg="#eaf4fb", border="#2980b9", title_color="#1a5276",
+                          padding="0 24px 16px") if perf_context else "",
+            (
+                "<tr><td style='padding:0 24px 16px;'>"
+                "<div style='background:#eafaf1;border-left:5px solid #27ae60;"
+                "border-radius:8px;padding:18px 20px;'>"
+                "<p style='margin:0 0 10px;font-size:12px;font-weight:bold;color:#1e8449;"
+                "text-transform:uppercase;letter-spacing:1.5px;'>Tomorrow's Battle Plan</p>"
+                f"<p style='margin:0;font-size:14px;color:#2c3e50;line-height:1.9;'>{tmrw_plan}</p>"
+                "</div></td></tr>"
+            ) if tmrw_plan else "",
+            (
+                "<tr><td style='padding:0 24px 16px;'>"
+                "<div style='background:linear-gradient(135deg,#1a5276,#6e2f8c);"
+                "border-radius:10px;padding:20px 24px;'>"
+                "<p style='margin:0 0 10px;font-size:12px;font-weight:bold;color:#aed6f1;"
+                "text-transform:uppercase;letter-spacing:1.5px;'>Skill Weapon for Tomorrow</p>"
+                f"<p style='margin:0;font-size:14px;color:#fff;line-height:1.9;'>{skill_weapon}</p>"
+                "</div></td></tr>"
+            ) if skill_weapon else "",
+            _html_section("Mindset Reset", mindset_reset,
+                          bg="#f5eef8", border="#8e44ad", title_color="#6c3483",
+                          padding="0 24px 24px") if mindset_reset else "",
+        ]))
+    else:
+        extra_sections = ""
+
+    return f"""<!DOCTYPE html>
 <html>
 <head><meta charset='UTF-8'></head>
 <body style='margin:0;padding:0;background:#f0f3f7;font-family:Arial,sans-serif;'>
 <table width='100%' cellpadding='0' cellspacing='0'
-       style='max-width:600px;margin:30px auto;background:#fff;border-radius:12px;
-              overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.1);'>
+       style='max-width:620px;margin:30px auto;background:#fff;border-radius:14px;
+              overflow:hidden;box-shadow:0 6px 30px rgba(0,0,0,0.12);'>
 
-  <tr><td style='background:{header_bg};padding:30px 24px;text-align:center;'>
-    <p style='color:#aed6f1;margin:0 0 6px;font-size:12px;letter-spacing:2px;text-transform:uppercase;'>
-      {label_time} &middot; Daily Summary
+  <tr><td style='background:{header_bg};padding:30px 28px;text-align:center;'>
+    <p style='color:#aed6f1;margin:0 0 6px;font-size:12px;letter-spacing:2.5px;text-transform:uppercase;'>
+      {'End of Day' if is_midnight else 'Midday Check'} &nbsp;&middot;&nbsp; {date_str}
     </p>
-    <h1 style='color:#fff;margin:0;font-size:22px;'>{header_txt}</h1>
+    <h1 style='color:#fff;margin:0;font-size:24px;font-weight:800;'>{header_txt}</h1>
     <p style='color:#aed6f1;margin:8px 0 0;font-size:14px;'>{sub_txt}</p>
   </td></tr>
 
-  <tr><td style='padding:24px 24px 10px;'>
-    <p style='margin:0 0 8px;font-size:14px;color:#7f8c8d;'>Daily Progress</p>
-    <div style='background:#ecf0f1;border-radius:50px;height:22px;overflow:hidden;'>
+  <tr><td style='padding:24px 28px 10px;'>
+    <p style='margin:0 0 8px;font-size:13px;color:#7f8c8d;font-weight:bold;
+              text-transform:uppercase;letter-spacing:1px;'>Daily Progress</p>
+    <div style='background:#ecf0f1;border-radius:50px;height:24px;overflow:hidden;'>
       <div style='width:{pct}%;background:{bar_color};height:100%;border-radius:50px;'></div>
     </div>
     <p style='margin:8px 0 0;font-size:13px;color:{bar_color};font-weight:bold;'>
-      {applied}/{GOAL} applied ({pct}%)
-      {" — GOAL MET!" if is_goal else f" — {remaining} more to reach your goal"}
+      {applied}/{GOAL} ({pct}%)
+      {'&nbsp;— GOAL MET!' if is_goal else f'&nbsp;— {remaining} more to reach {GOAL}'}
     </p>
   </td></tr>
 
-  <tr><td style='padding:10px 24px 20px;'>
-    <p style='margin:0 0 10px;font-size:15px;font-weight:bold;color:#2c3e50;'>Applications by Role</p>
-    <table width='100%' style='border-collapse:collapse;border-radius:8px;overflow:hidden;border:1px solid #eee;'>
+  <tr><td style='padding:14px 28px 20px;'>
+    <p style='margin:0 0 12px;font-size:13px;font-weight:bold;color:#2c3e50;
+              text-transform:uppercase;letter-spacing:1px;'>Applications by Role</p>
+    <table width='100%' style='border-collapse:collapse;border:1px solid #eee;border-radius:8px;overflow:hidden;'>
       <tr style='background:#2c3e50;'>
         <th style='padding:10px 16px;color:#fff;text-align:left;font-size:13px;'>Role</th>
-        <th style='padding:10px 16px;color:#fff;text-align:center;font-size:13px;'>Applied</th>
+        <th style='padding:10px 16px;color:#fff;text-align:left;font-size:13px;'>Progress</th>
       </tr>
       {roles_rows}
       <tr style='background:#f0f3f7;'>
-        <td style='padding:12px 16px;font-weight:bold;color:#2c3e50;font-size:14px;'>Total</td>
-        <td style='padding:12px 16px;text-align:center;font-weight:bold;font-size:20px;color:{bar_color};'>{applied}</td>
+        <td style='padding:12px 16px;font-weight:bold;font-size:15px;color:#2c3e50;'>Total</td>
+        <td style='padding:12px 16px;font-weight:bold;font-size:22px;color:{bar_color};'>{applied}</td>
       </tr>
     </table>
   </td></tr>
 
-  <tr><td style='padding:4px 24px 16px;'>
-    <div style='background:{end_color}18;border-left:5px solid {end_color};
-                border-radius:8px;padding:22px;'>
-      <p style='margin:0 0 10px;font-size:19px;font-weight:bold;color:{end_color};'>
-        {end_title}
+  <tr><td style='padding:4px 28px 16px;'>
+    <div style='background:{main_color}15;border-left:5px solid {main_color};
+                border-radius:10px;padding:22px 24px;'>
+      <p style='margin:0 0 12px;font-size:20px;font-weight:bold;color:{main_color};line-height:1.3;'>
+        {main_title}
       </p>
-      <p style='margin:0;font-size:15px;color:#2c3e50;line-height:1.8;'>
-        {end_body}
+      <p style='margin:0;font-size:15px;color:#2c3e50;line-height:1.9;'>
+        {main_body}
       </p>
     </div>
   </td></tr>
 
-  {action_plan_block}
-  {role_insight_block}
-  {tomorrow_plan_block}
-  {strength_block}
+  {extra_sections}
 
 </table>
-<p style='text-align:center;font-size:11px;color:#bbb;margin-top:12px;'>
-  Job Application Tracker &middot; Baddela Raju &middot; {date_str}
+<p style='text-align:center;font-size:11px;color:#bbb;margin-top:14px;'>
+  Job Application Tracker &nbsp;&middot;&nbsp; Baddela Raju &nbsp;&middot;&nbsp; {date_str}
 </p>
 </body></html>
 """
 
 def build_html(applied, goal, roles_data, is_goal_met):
-    remaining = max(0, goal - applied)
+    remaining  = max(0, goal - applied)
     pct        = min(100, int(applied / goal * 100))
     bar_color  = "#27ae60" if is_goal_met else "#e67e22" if pct >= 50 else "#e74c3c"
-    motivation = random.choice(MOTIVATIONS)
     now_str    = now_uk().strftime("%I:%M %p")
     date_str   = today_display()
 
     if is_goal_met:
-        header_bg  = "#1a5276"
-        header_txt = f"GOAL CRUSHED — {applied}/{goal} Applications Today!"
-        sub_txt    = "You're an absolute machine. Your dream job is getting closer!"
-        cta        = "<p style='font-size:18px;color:#27ae60;font-weight:bold;'>OUTSTANDING WORK TODAY! Keep this momentum tomorrow!</p>"
+        header_bg   = "#145a32"
+        header_txt  = f"GOAL CRUSHED — {applied}/{goal} Today!"
+        sub_txt     = f"{now_str} UK &middot; Outstanding!"
+        cta_color   = "#27ae60"
+        cta_default = "You hit 25+ applications today. That discipline is rare — keep it going tomorrow."
     elif applied == 0:
-        header_bg  = "#922b21"
-        header_txt = f"0/{goal} Applications — Day Not Started!"
-        sub_txt    = "Get started RIGHT NOW. Every hour counts!"
-        cta        = f"<p style='font-size:16px;color:#e74c3c;font-weight:bold;'>{motivation}</p>"
+        header_bg   = "#922b21"
+        header_txt  = f"0/{goal} — Get Started NOW"
+        sub_txt     = f"{now_str} UK &middot; {date_str}"
+        cta_color   = "#e74c3c"
+        cta_default = "Not a single application yet. Set a 30-minute timer and apply to 5 jobs right now — just start."
     else:
-        header_bg  = "#1a5276"
-        header_txt = f"{applied}/{goal} Applications Today — {remaining} More Needed!"
-        sub_txt    = f"As of {now_str} UK time on {date_str}"
-        cta        = f"<p style='font-size:15px;color:#e67e22;font-weight:bold;'>{motivation}</p>"
+        header_bg   = "#1a5276"
+        header_txt  = f"{applied}/{goal} Done — {remaining} More to Go"
+        sub_txt     = f"{now_str} UK &middot; {date_str}"
+        cta_color   = "#e67e22"
+        cta_default = f"{applied} applications done. {remaining} more will get you to the goal. One focused hour."
+
+    llm             = generate_llm_content("check", applied, roles_data, remaining)
+    llm_headline    = cta_default
+    llm_body        = ""
+    momentum_read   = ""
+    action_sprint   = ""
+    role_gap        = ""
+
+    if llm:
+        llm_headline  = llm.get("headline", cta_default)
+        llm_body      = llm.get("body", "")
+        momentum_read = llm.get("momentum_read", "")
+        action_sprint = llm.get("action_sprint", "")
+        role_gap      = llm.get("role_gap_analysis", "")
 
     roles_rows = ""
     for key, label in ROLES.items():
         count = roles_data.get(key, 0)
+        bar_w = min(100, int(count / max(applied, 1) * 100)) if applied else 0
         roles_rows += (
-            f"<tr><td style='padding:10px 16px;border-bottom:1px solid #eee;'>{label}</td>"
-            f"<td style='padding:10px 16px;border-bottom:1px solid #eee;text-align:center;"
-            f"font-weight:bold;color:#2c3e50;'>{count}</td></tr>"
+            f"<tr><td style='padding:10px 16px;border-bottom:1px solid #eee;font-size:14px;'>{label}</td>"
+            f"<td style='padding:10px 16px;border-bottom:1px solid #eee;'>"
+            f"<div style='display:flex;align-items:center;gap:8px;'>"
+            f"<div style='flex:1;background:#ecf0f1;border-radius:20px;height:8px;'>"
+            f"<div style='width:{bar_w}%;background:{bar_color};height:100%;border-radius:20px;'></div></div>"
+            f"<span style='font-weight:bold;color:#2c3e50;min-width:20px;'>{count}</span>"
+            f"</div></td></tr>"
         )
 
-    return f"""
-<!DOCTYPE html>
+    return f"""<!DOCTYPE html>
 <html>
 <head><meta charset='UTF-8'></head>
 <body style='margin:0;padding:0;background:#f0f3f7;font-family:Arial,sans-serif;'>
 <table width='100%' cellpadding='0' cellspacing='0'
-       style='max-width:600px;margin:30px auto;background:#fff;border-radius:12px;
-              overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.1);'>
+       style='max-width:620px;margin:30px auto;background:#fff;border-radius:14px;
+              overflow:hidden;box-shadow:0 6px 30px rgba(0,0,0,0.12);'>
 
-  <tr><td style='background:{header_bg};padding:30px 24px;text-align:center;'>
-    <h1 style='color:#fff;margin:0;font-size:22px;'>{header_txt}</h1>
+  <tr><td style='background:{header_bg};padding:30px 28px;text-align:center;'>
+    <p style='color:#aed6f1;margin:0 0 6px;font-size:12px;letter-spacing:2.5px;text-transform:uppercase;'>
+      Progress Check &nbsp;&middot;&nbsp; {date_str}
+    </p>
+    <h1 style='color:#fff;margin:0;font-size:24px;font-weight:800;'>{header_txt}</h1>
     <p style='color:#aed6f1;margin:8px 0 0;font-size:14px;'>{sub_txt}</p>
   </td></tr>
 
-  <tr><td style='padding:24px 24px 10px;'>
-    <p style='margin:0 0 8px;font-size:14px;color:#7f8c8d;'>Daily Progress</p>
-    <div style='background:#ecf0f1;border-radius:50px;height:22px;overflow:hidden;'>
-      <div style='width:{pct}%;background:{bar_color};height:100%;border-radius:50px;transition:width 0.5s;'></div>
+  <tr><td style='padding:24px 28px 10px;'>
+    <p style='margin:0 0 8px;font-size:13px;color:#7f8c8d;font-weight:bold;
+              text-transform:uppercase;letter-spacing:1px;'>Daily Progress</p>
+    <div style='background:#ecf0f1;border-radius:50px;height:24px;overflow:hidden;'>
+      <div style='width:{pct}%;background:{bar_color};height:100%;border-radius:50px;'></div>
     </div>
     <p style='margin:8px 0 0;font-size:13px;color:{bar_color};font-weight:bold;'>
-      {applied}/{goal} applied &nbsp;({pct}%){" — GOAL MET!" if is_goal_met else f" — {remaining} more to go"}
+      {applied}/{goal} ({pct}%)
+      {'&nbsp;— GOAL MET!' if is_goal_met else f'&nbsp;— {remaining} more to go'}
     </p>
   </td></tr>
 
-  <tr><td style='padding:10px 24px 20px;'>
-    <p style='margin:0 0 10px;font-size:15px;font-weight:bold;color:#2c3e50;'>Applications by Role</p>
-    <table width='100%' style='border-collapse:collapse;border-radius:8px;overflow:hidden;border:1px solid #eee;'>
+  <tr><td style='padding:14px 28px 20px;'>
+    <p style='margin:0 0 12px;font-size:13px;font-weight:bold;color:#2c3e50;
+              text-transform:uppercase;letter-spacing:1px;'>By Role</p>
+    <table width='100%' style='border-collapse:collapse;border:1px solid #eee;border-radius:8px;overflow:hidden;'>
       <tr style='background:#2c3e50;'>
         <th style='padding:10px 16px;color:#fff;text-align:left;font-size:13px;'>Role</th>
-        <th style='padding:10px 16px;color:#fff;text-align:center;font-size:13px;'>Applied</th>
+        <th style='padding:10px 16px;color:#fff;text-align:left;font-size:13px;'>Progress</th>
       </tr>
       {roles_rows}
     </table>
   </td></tr>
 
-  <tr><td style='padding:0 24px 20px;text-align:center;'>
-    {cta}
+  <tr><td style='padding:4px 28px 16px;'>
+    <div style='background:{cta_color}15;border-left:5px solid {cta_color};
+                border-radius:10px;padding:22px 24px;'>
+      <p style='margin:0 0 10px;font-size:18px;font-weight:bold;color:{cta_color};'>{llm_headline}</p>
+      <p style='margin:0;font-size:14px;color:#2c3e50;line-height:1.9;'>{llm_body if llm_body else cta_default}</p>
+    </div>
   </td></tr>
 
+  {_html_section("Momentum Read", momentum_read,
+     bg="#eaf4fb", border="#2980b9", title_color="#1a5276",
+     padding="0 28px 16px") if momentum_read else ""}
+
+  {_html_section("90-Minute Action Sprint", action_sprint,
+     bg="#eafaf1", border="#27ae60", title_color="#1e8449",
+     padding="0 28px 16px") if action_sprint else ""}
+
+  {_html_section("Role Gap — Fix It", role_gap,
+     bg="#fef9e7", border="#f39c12", title_color="#d68910",
+     padding="0 28px 24px") if role_gap else ""}
+
 </table>
-<p style='text-align:center;font-size:11px;color:#bbb;margin-top:12px;'>
-  Job Application Tracker &middot; Baddela Raju &middot; {date_str}
+<p style='text-align:center;font-size:11px;color:#bbb;margin-top:14px;'>
+  Job Application Tracker &nbsp;&middot;&nbsp; Baddela Raju &nbsp;&middot;&nbsp; {date_str}
 </p>
 </body></html>
 """
@@ -1073,6 +1157,74 @@ AMAZON SHIFT SCHEDULE:
   Note: {ws.get('shift_note', '')}
 """
 
+def _get_hunt_stats():
+    """Compute rich job-hunt statistics to give the LLM full historical context."""
+    log = load_log()
+    if not log:
+        return "No application history yet — this is Day 1."
+
+    totals = []
+    grand_total = 0
+    role_totals = {r: 0 for r in ROLES}
+    goal_days   = 0
+    zero_days   = 0
+
+    for date, entry in log.items():
+        if isinstance(entry, int):
+            t, roles = entry, {}
+        else:
+            t     = entry.get("total", 0)
+            roles = entry.get("roles", {})
+        totals.append((date, t))
+        grand_total += t
+        if t >= GOAL:
+            goal_days += 1
+        if t == 0:
+            zero_days += 1
+        for r in ROLES:
+            role_totals[r] += roles.get(r, 0)
+
+    totals.sort()
+    days_tracked  = len(totals)
+    best_date, best_count = max(totals, key=lambda x: x[1])
+    avg           = grand_total / days_tracked if days_tracked else 0
+    missed_days   = days_tracked - goal_days
+
+    recent = totals[-7:]
+    recent_str = " → ".join(f"{d[5:]}:{c}" for d, c in recent)
+
+    # current streak (consecutive days with >0 apps, counting backward)
+    streak = 0
+    for _, c in reversed(totals):
+        if c > 0:
+            streak += 1
+        else:
+            break
+
+    today_str = today()
+    today_total = log.get(today_str, {})
+    if isinstance(today_total, int):
+        today_total = today_total
+    else:
+        today_total = today_total.get("total", 0)
+
+    role_breakdown = " | ".join(f"{k.upper()}={role_totals[k]}" for k in ROLES)
+    top_role       = max(role_totals, key=lambda r: role_totals[r])
+    top_role_label = ROLES.get(top_role, top_role)
+
+    return f"""
+=== JOB HUNT STATS (all-time) ===
+Total applications  : {grand_total} across {days_tracked} tracked days
+Daily average       : {avg:.1f} apps/day (goal: {GOAL})
+Best single day     : {best_date} — {best_count} applications
+Goal days (>={GOAL}) : {goal_days} / {days_tracked} days ({int(goal_days/days_tracked*100) if days_tracked else 0}% hit rate)
+Days missed (<{GOAL}) : {missed_days} ({zero_days} were zero-application days)
+Current streak      : {streak} consecutive days with applications
+Top role applied to : {top_role_label} ({role_totals[top_role]} total)
+All-time by role    : {role_breakdown}
+Last 7 days (MM-DD:apps): {recent_str}
+"""
+
 def generate_llm_content(email_type, applied, roles_data, remaining):
     cfg     = load_config()
     api_key = cfg.get("groq_api_key", "")
@@ -1085,95 +1237,181 @@ def generate_llm_content(email_type, applied, roles_data, remaining):
     except ImportError:
         return None
 
-    day_note = get_day_context()
-    date_str = today_display()
-    profile  = _build_gemini_profile()
+    day_note   = get_day_context()
+    date_str   = today_display()
+    profile    = _build_gemini_profile()
+    stats      = _get_hunt_stats()
+    uk_now     = now_uk()
+    dow        = uk_now.strftime("%A")
 
     role_lines = "\n".join(
-        f"  {label:<35}: {roles_data.get(key, 0)}"
+        f"  {label:<35}: {roles_data.get(key, 0)} applied today"
         for key, label in ROLES.items()
     )
+    weakest_role  = min(roles_data, key=lambda r: roles_data.get(r, 0))
+    weakest_label = ROLES.get(weakest_role, weakest_role)
+    strongest_role  = max(roles_data, key=lambda r: roles_data.get(r, 0))
+    strongest_label = ROLES.get(strongest_role, strongest_role)
+    pace_projection = int(applied / uk_now.hour * 12) if uk_now.hour > 0 else 0
 
-    progress = f"""
-=== TODAY'S STATUS ===
-Date     : {date_str} (UK time)
-Schedule : {day_note}
-Progress : {applied}/{GOAL} applications done, {remaining} remaining
+    context_block = f"""
+=== TODAY ({date_str} — {dow}) ===
+UK schedule context : {day_note}
+Applications done   : {applied}/{GOAL}  ({remaining} remaining)
+Today's role counts :
 {role_lines}
+Strongest role today: {strongest_label} ({roles_data.get(strongest_role, 0)})
+Weakest role today  : {weakest_label} ({roles_data.get(weakest_role, 0)})
+Pace projection     : ~{pace_projection} apps by end of day at current rate
 """
 
+    # ── MORNING ──────────────────────────────────────────────────────────────
     if email_type == "morning":
-        instruction = f"""You are Raju's deeply personal AI job hunt coach. Write a MORNING MOTIVATION email.
-Use his REAL skills and projects naturally — LangGraph, QLoRA, RAG, MLflow, Power BI, YOLOv8, LSTM etc.
-Make him feel his expertise is genuinely rare in London's AI market.
-Acknowledge today's schedule context if relevant.
+        instruction = f"""You are Raju's elite personal job hunt coach — deeply knowledgeable about his CV, his projects, and the London AI/data job market. Write his 7 AM MORNING BRIEFING.
 
-Return ONLY valid JSON — no markdown fences, no extra text:
+RULES:
+- Reference his SPECIFIC projects by name (LangGraph multi-agent pipeline, Agentic AI Video Synthesizer, QLoRA fine-tuning, RAG chatbot with 87% accuracy, YOLOv8 defect detection, LSTM forecasting, KPMG Tableau dashboard, MLflow pipeline). Never say "your projects" generically.
+- Name SPECIFIC London market sectors hungry for his skills (fintech, healthtech, legaltech, AI startups, defence tech, media AI).
+- Give CONCRETE keyword advice (e.g. "search 'LangChain engineer London', 'MLOps engineer Series B', 'applied AI consultant fintech'").
+- Make each section feel like a personal briefing from a coach who has studied his CV for hours.
+- Use active, direct language. No filler phrases like "it's important to" or "remember to".
+- Every field must be UNIQUE to today ({date_str}) — not generic job hunt advice.
+
+Return ONLY valid JSON (no markdown, no extra text):
 {{
-  "headline": "punchy unique headline 5-8 words capturing today's energy — no emoji",
-  "body": "4-5 sentences — energetic personal coach tone, references at least 2 of his specific projects or skills by name, connects his background to real London market demand, makes him excited to open his laptop and apply",
-  "strategy": "2-3 sentences — specific tactical advice for today: which role combination to hit first given his background, what types of companies or JD keywords to prioritise (e.g. startups with LangChain/RAG stacks, fintech with XGBoost/MLflow, analytics teams wanting Power BI + SQL)",
-  "affirmation": "One powerful 12-18 word affirmation written specifically for Raju — references his name or his real skills"
+  "headline": "5-8 word punchy headline capturing today's unique energy — no emoji, no generic 'Let us go'",
+  "body": "5-6 sentences: open with a specific observation about his rarest skill combination (e.g. 'You are one of the only candidates in London who can bridge QLoRA fine-tuning with production RAG systems AND present results in Power BI'); name the 2-3 companies/sectors most likely to call him this week; tell him exactly why today is the right moment to push hard",
+  "market_intel": "3-4 sentences of specific London market intelligence: which sectors are hiring AI/data right now, what specific role titles are trending (e.g. 'AI Engineer', 'MLOps Engineer', 'Applied Scientist'), what salary bands he should be targeting given his MSc + project depth, and one insider tip (e.g. 'Series A-C fintechs are hiring faster than big banks right now — filter by 50-200 employee count on LinkedIn')",
+  "battle_plan": "4-5 sentences of today's tactical battle plan: exact role order to attack (e.g. 'Start with 8 AI Engineer roles 9-10 AM, then 6 ML Engineer roles 10-11 AM, then 6 DA roles 11-12 PM'); name 3 specific JD keyword phrases to search; name 2 specific company types to prioritise; specify what to customise in each application (which project to lead with for each role type)",
+  "skill_of_the_day": "2-3 sentences: pick ONE specific project or skill to foreground today and explain exactly WHY it will get responses — be technical and specific (e.g. 'Lead every AI Engineer application today with the Agentic AI Video Synthesizer — it combines LangGraph orchestration, TTS, and video synthesis, which is exactly what media-tech and creative AI startups are building right now. Paste the GitHub link in the cover letter.')",
+  "affirmation": "One powerful 15-20 word affirmation personalised to Raju — must mention his name AND reference a specific technical skill or achievement"
 }}"""
 
+    # ── MIDDAY ───────────────────────────────────────────────────────────────
+    elif email_type == "midday":
+        if applied >= GOAL:
+            tone_note = "celebratory — he hit the goal before noon, extraordinary discipline"
+        elif applied >= 15:
+            tone_note = "strong encouragement — excellent morning, afternoon will seal it"
+        elif applied >= 8:
+            tone_note = "constructive urgency — decent start, needs a focused afternoon push"
+        elif applied >= 3:
+            tone_note = "honest urgency — morning was slow, afternoon must be relentless"
+        else:
+            tone_note = "firm but caring alert — very few applications, needs an immediate reset (check Amazon shift context)"
+
+        instruction = f"""You are Raju's elite job hunt coach delivering his 12 PM MIDDAY HALF-TIME BRIEFING.
+Tone: {tone_note}
+
+He has done {applied}/{GOAL} applications this morning. Role breakdown: {", ".join(f"{k.upper()}={roles_data.get(k,0)}" for k in ROLES)}.
+Weakest role: {weakest_label} ({roles_data.get(weakest_role, 0)} apps). Strongest: {strongest_label} ({roles_data.get(strongest_role, 0)} apps).
+
+RULES:
+- Be specific about WHAT he achieved this morning (name the exact numbers per role).
+- Give a real half-time performance verdict — not vague encouragement.
+- The afternoon battle plan must be HOUR-BY-HOUR with specific role targets and search keywords.
+- Reference his specific skills/projects when advising which type of company to hit this afternoon.
+- Never repeat morning advice verbatim. This is a fresh tactical briefing based on where he actually stands.
+
+Return ONLY valid JSON (no markdown, no extra text):
+{{
+  "headline": "honest half-time headline reflecting exact {applied}/{GOAL} — no emoji",
+  "body": "5-6 sentences: name the exact morning numbers per role, give an honest verdict on pace vs goal, acknowledge what went well and what didn't, set the tone for the afternoon with real energy",
+  "half_time_verdict": "3-4 sentences of cold honest analysis: is he on track for 25? What specific pattern do you see in his morning (e.g. 'You crushed AI roles but DA and DS are at zero — that imbalance will hurt your profile breadth')? Compare to what his best days look like from the stats. No sugarcoating.",
+  "afternoon_battle_plan": "5-6 sentences: hour-by-hour plan from 1 PM to 6 PM UK. Assign specific role targets per hour (e.g. '1-2 PM: 6 ML Engineer roles — search MLOps fintech London, senior ML engineer Series B'). Name which of his projects to lead with per role type. Name 2-3 specific company types to prioritise this afternoon based on his skills.",
+  "role_gap_fix": "2-3 sentences: focus on the weakest role ({weakest_label} at {roles_data.get(weakest_role, 0)}). Give 3 specific JD search phrases to find those roles fast. Explain exactly which of his skills/projects makes him strong for that role type.",
+  "personal_edge": "2-3 sentences: name one specific technical advantage Raju has over other applicants in the London market right now — be precise (e.g. 'Very few London candidates can show production-level RAG with evaluated accuracy metrics AND a client-facing Tableau dashboard — you can. Lead with both this afternoon.')"
+}}"""
+
+    # ── CHECK ────────────────────────────────────────────────────────────────
     elif email_type == "check":
         if applied >= GOAL:
-            tone = "celebratory and proud — he crushed the goal"
+            tone_note = "proud celebration — goal smashed, encourage maintaining the streak tomorrow"
         elif applied >= 15:
-            tone = "encouraging and energetic — almost there, one last push will finish it"
-        elif applied >= 5:
-            tone = "urgent but not harsh — a strong afternoon sprint will save the day"
+            tone_note = "energetic push — almost there, one final sprint will close the gap"
+        elif applied >= 8:
+            tone_note = "urgent but supportive — real gap exists, needs focused action NOW"
+        elif applied >= 1:
+            tone_note = "direct wake-up call — too few apps for this time of day, respectful urgency"
         else:
-            tone = "firm, direct, caring — unless on Amazon shift (then understanding and supportive)"
+            tone_note = "caring alarm — zero applications, check shift context, mobilise immediately"
 
-        weakest_role  = min(roles_data, key=lambda r: roles_data.get(r, 0))
-        weakest_label = ROLES.get(weakest_role, weakest_role)
+        hour_str = uk_now.strftime("%I:%M %p")
 
-        instruction = f"""You are Raju's personal AI job hunt coach. Write a PROGRESS CHECK email.
-Tone: {tone}
-Current weakest role by count: {weakest_label} ({roles_data.get(weakest_role, 0)} applications)
+        instruction = f"""You are Raju's elite job hunt coach sending a MID-DAY PROGRESS CHECK at {hour_str} UK time.
+Tone: {tone_note}
 
-Return ONLY valid JSON — no markdown fences, no extra text:
+Current: {applied}/{GOAL} done. Role breakdown: {", ".join(f"{k.upper()}={roles_data.get(k,0)}" for k in ROLES)}.
+Pace projection based on hour: ~{pace_projection} apps by end of day at current rate.
+
+RULES:
+- Open with the EXACT numbers — no vague "you've made some progress".
+- The momentum read must do real maths: at his current pace will he hit 25?
+- The action sprint must name SPECIFIC search terms and SPECIFIC company types matching his skills.
+- The role gap analysis must name the lagging role AND give 3 keyword phrases to fix it fast.
+- Reference his history (from stats) to anchor the feedback — has he had better days? What did those look like?
+
+Return ONLY valid JSON (no markdown, no extra text):
 {{
-  "headline": "headline reflecting exact progress {applied}/{GOAL} — honest, no emoji",
-  "body": "4-5 sentences — acknowledge exact numbers for each role, reference today's schedule if relevant, be specific about what's been achieved and what gap remains, tone matches above",
-  "action_plan": "2-3 sentences — concrete next-2-hours plan: specific role to focus on, specific type of company to target given his skills, realistic target number to hit before end of day",
-  "role_insight": "1-2 sentences — point out which role is lagging ({weakest_label} at {roles_data.get(weakest_role, 0)}) and why it matters for his profile to have balanced coverage"
+  "headline": "precise progress headline with exact {applied}/{GOAL} count and time — no emoji",
+  "body": "5-6 sentences: state exact role-by-role numbers, give honest assessment of pace, reference one insight from his historical stats (e.g. 'On your best day you hit 29 — today you need to beat your average of X'), connect urgency to his real goal (landing a job in London this year), close with one line that makes him want to open a new tab and apply",
+  "momentum_read": "2-3 sentences of real maths: at {applied} apps by {hour_str}, he is projected to reach {pace_projection} by midnight. Is that enough? What exactly does he need to do in the next 2 hours to get back on track for {GOAL}? Give the specific number he needs per hour.",
+  "action_sprint": "4-5 sentences: a precise 90-minute sprint plan — which role to open RIGHT NOW, which 3 JD keywords to search on LinkedIn/Indeed, which type of company to target (startup vs enterprise, which sector), how many applications to complete before the next check-in. Name one of his projects to copy-paste into the cover letter for maximum speed.",
+  "role_gap_analysis": "2-3 sentences: {weakest_label} is at {roles_data.get(weakest_role, 0)} — give 3 SPECIFIC search phrases to find those roles fast (e.g. 'data scientist fintech London', 'NLP engineer AI startup', 'ML engineer Series B'). Explain in one line which of his specific skills makes him a strong candidate for that role type."
 }}"""
 
-    else:  # midnight
+    # ── MIDNIGHT ─────────────────────────────────────────────────────────────
+    else:
         if applied >= GOAL:
-            tone = "celebratory, proud, set up for tomorrow"
-        elif applied >= 15:
-            tone = "positive but honest — good day, close to goal, tomorrow go further"
-        elif applied >= 5:
-            tone = "honest and constructive — below target, acknowledge why, clear tomorrow plan"
+            tone_note = "genuinely proud and celebratory — he hit or exceeded the goal, honour it"
+        elif applied >= 18:
+            tone_note = "positive and honest — strong day, just short, encourage tomorrow's push"
+        elif applied >= 10:
+            tone_note = "constructive and forward-looking — decent effort, real gap, clear tomorrow plan"
+        elif applied >= 3:
+            tone_note = "honest and direct — below expectations, name it clearly but rebuild positively"
         else:
-            tone = "honest, caring, no harsh judgement — reset and rebuild tomorrow (consider Amazon shift)"
+            tone_note = "caring and reset-focused — very few or zero apps, check shift context, start fresh tomorrow"
 
-        instruction = f"""You are Raju's personal AI job hunt coach. Write an END OF DAY SUMMARY email.
-Tone: {tone}
-Be honest about {applied}/{GOAL} — don't sugarcoat but don't crush either.
+        instruction = f"""You are Raju's elite job hunt coach delivering his MIDNIGHT END-OF-DAY DEBRIEF.
+Tone: {tone_note}
 
-Return ONLY valid JSON — no markdown fences, no extra text:
+Final count: {applied}/{GOAL}. Role breakdown: {", ".join(f"{k.upper()}={roles_data.get(k,0)}" for k in ROLES)}.
+Weakest role: {weakest_label} ({roles_data.get(weakest_role, 0)}). Strongest: {strongest_label} ({roles_data.get(strongest_role, 0)}).
+
+RULES:
+- Use his full historical stats to give a data-driven verdict on today.
+- Be honest about the number — {applied} is {applied}. Don't inflate it.
+- The tomorrow battle plan must be hyper-specific: wake time, first role, target per role, search keywords for each.
+- The skill weapon section must name ONE specific project and explain exactly how to use it tomorrow — not general advice.
+- The mindset reset must leave him feeling capable and ready, not crushed or falsely inflated.
+- Never repeat today's advice. This is a fresh strategic brief for tomorrow.
+
+Return ONLY valid JSON (no markdown, no extra text):
 {{
-  "headline": "honest end-of-day headline for {applied}/{GOAL} — no emoji",
-  "body": "4-5 sentences — reflect on today's full picture ({applied} total, role breakdown), acknowledge Amazon shift or weekend if context says so, celebrate wins even if small, be real about shortfall",
-  "tomorrow_plan": "2-3 sentences — specific actionable plan for tomorrow: start time, which roles to hit first, a concrete number target per role to reach {GOAL} total",
-  "strength": "1-2 sentences — one specific skill or project from his CV to highlight MORE in tomorrow's applications (e.g. his Agentic AI Video Synthesizer for AI roles, or KPMG Tableau dashboard for DA roles) and why recruiters will respond to it"
+  "headline": "honest end-of-day headline for {applied}/{GOAL} — no emoji, no cliches",
+  "body": "6-7 sentences: open with the exact number and honest context (e.g. 'Today ended at {applied} applications — {remaining} short of the {GOAL} target'); name the role breakdown specifically; reference one pattern from his historical stats (compare to average, best day, streak); acknowledge any extenuating factors (Amazon shift, weekend) if the context mentions them; be direct about what this means for his job hunt timeline; close with one forward-looking sentence that reframes tomorrow as a real opportunity",
+  "day_verdict": "3-4 sentences of cold, clear analysis: what worked today (which roles got traction, what pace was achieved), what didn't work (which roles were ignored, where time was lost), one specific pattern you notice across his recent days from the stats. No sugarcoating — this is a coaching debrief, not a pep talk.",
+  "performance_context": "2-3 sentences: how does {applied} compare to his all-time average, his best day, and his last 7 days? What does this tell him about his job hunt arc? Is he improving, plateauing, or declining? Give the honest read with specific numbers from his stats.",
+  "tomorrow_battle_plan": "6-7 sentences of hyper-specific tomorrow plan: exact recommended wake time (e.g. '7:30 AM — open LinkedIn before breakfast'); role attack order with specific targets per role (e.g. 'First 8 AI Engineer roles by 9:30 AM — search LangChain engineer London, agentic AI startup, applied AI Series B'); 3 specific JD keyword phrases for each role type; which sectors to prioritise for each role; name the company size/stage most likely to respond to his profile; include one 'power move' (e.g. 'Send 3 personalised LinkedIn messages to AI team leads at Series B startups — your GitHub RAG project gives you a conversation starter')",
+  "skill_weapon": "3-4 sentences: name ONE specific project from his CV that he should weaponise tomorrow — explain exactly which role type benefits, how to mention it (cover letter, LinkedIn summary, application note), why recruiters in that sector will immediately recognise its value, and what specific outcome/metric to highlight (e.g. '87% accuracy on domain-specific QA', '40% reduction in labelling costs with QLoRA', '95% defect detection with YOLOv8')",
+  "mindset_reset": "2-3 sentences to close the day: acknowledge today honestly, then shift his mental frame to tomorrow — not with empty positivity but with a specific reason why tomorrow is a real opportunity (e.g. 'Monday morning recruiters are actively reviewing CVs — your RAG project puts you in the top 5% of AI applicants'). Leave him ready to sleep and wake up motivated."
 }}"""
 
     prompt = (
-        "You are Raju's deeply personal AI job hunt coach with full knowledge of his background.\n\n"
-        f"{profile}\n{progress}\n{instruction}"
+        "You are Raju's elite personal AI job hunt coach. You have studied his full CV, all his projects, "
+        "his Amazon shift schedule, and his complete application history. You give specific, data-driven, "
+        "deeply personalised coaching — never generic advice.\n\n"
+        f"{profile}\n{stats}\n{context_block}\n\n{instruction}"
     )
 
     try:
         client   = Groq(api_key=api_key)
         response = client.chat.completions.create(
-            model      = "llama-3.3-70b-versatile",
-            messages   = [{"role": "user", "content": prompt}],
-            max_tokens = 700,
+            model       = "llama-3.3-70b-versatile",
+            messages    = [{"role": "user", "content": prompt}],
+            max_tokens  = 1400,
+            temperature = 0.85,
         )
         text  = response.choices[0].message.content.strip()
         match = _re.search(r'\{[\s\S]*\}', text)
