@@ -328,11 +328,7 @@ def _morning_stats():
         else:
             break
 
-    import glob as _glob
-    tracked = sum(
-        1 for p in _glob.glob(os.path.join(SCAN_ROOT, "**", "*.docx"), recursive=True)
-        if classify_role(os.path.basename(p)) != "other"
-    )
+    best_day = max((_t(e) for e in log.values()), default=0)
 
     return {
         "yesterday_total": yest_total,
@@ -341,7 +337,7 @@ def _morning_stats():
         "week_total":      week_total,
         "grand_total":     grand_total,
         "streak":          streak,
-        "tracked_resumes": tracked,
+        "best_day":        best_day,
     }
 
 
@@ -373,7 +369,7 @@ def build_morning_html(llm=None):
     week_total   = stats["week_total"]
     grand_total  = stats["grand_total"]
     streak       = stats["streak"]
-    tracked      = stats["tracked_resumes"]
+    best_day     = stats["best_day"]
 
     yest_role_str = " &nbsp;|&nbsp; ".join(
         f"{k.upper()}: {yest_roles.get(k, 0)}"
@@ -401,7 +397,7 @@ def build_morning_html(llm=None):
         _stat_cell("Today so far", today_so_far) +
         _stat_cell("This week",    week_total) +
         _stat_cell("All-time",     grand_total) +
-        _stat_cell("Resumes",      tracked, border=False)
+        _stat_cell("Best day",     best_day, border=False)
     )
 
     stats_block = (
@@ -1299,7 +1295,7 @@ CONTEXT:
 - Date: {date_str} ({dow})
 - Yesterday: {ms['yesterday_total']} applications | This week: {ms['week_total']} | All-time: {ms['grand_total']}
 - Streak: {ms['streak']} consecutive days with applications
-- Resumes in tracker: {ms['tracked_resumes']}
+- Best single day: {ms['best_day']} applications
 - Today's goal: {GOAL} applications across AI, DA, DS, ML, SE roles
 
 RULES:
