@@ -1,26 +1,35 @@
 name: Resume Tracker — Daily Emails (UK time)
 
-# GitHub Actions uses UTC. UK summer = BST (UTC+1).
-# To convert:  BST hour - 1 = UTC hour
+# PRIMARY TRIGGER: cron-job.org calls the GitHub API workflow_dispatch with
+# an "email_type" input at the exact UK time. This gives near-perfect timing.
 #
-#  7:00 AM BST = 06:00 UTC  → morning motivation
-#  9:00 AM BST = 08:00 UTC  → progress check
-# 12:00 PM BST = 11:00 UTC  → midday check  (exact noon UK)
-#  3:00 PM BST = 14:00 UTC  → progress check
-#  6:00 PM BST = 17:00 UTC  → progress check
-#  9:00 PM BST = 20:00 UTC  → progress check
-# 12:00 AM BST = 23:00 UTC  → midnight summary  (exact midnight UK)
+# FALLBACK: GitHub Actions cron (may be delayed 15-60 min — kept as backup).
+#
+# UK summer = BST (UTC+1). GitHub cron uses UTC.
+#  7:00 AM BST = 06:00 UTC
+#  9:00 AM BST = 08:00 UTC
+# 12:00 PM BST = 11:00 UTC
+#  3:00 PM BST = 14:00 UTC
+#  6:00 PM BST = 17:00 UTC
+#  9:00 PM BST = 20:00 UTC
+# 12:00 AM BST = 23:00 UTC
 
 on:
+  workflow_dispatch:
+    inputs:
+      email_type:
+        description: 'Email type: morning / check / midday / midnight'
+        required: false
+        default: 'morning'
+
   schedule:
-    - cron: '0 6  * * *'   # 07:00 AM BST — Morning motivation
-    - cron: '0 8  * * *'   # 09:00 AM BST — Progress check
-    - cron: '0 11 * * *'   # 12:00 PM BST — Midday check
-    - cron: '0 14 * * *'   # 03:00 PM BST — Progress check
-    - cron: '0 17 * * *'   # 06:00 PM BST — Progress check
-    - cron: '0 20 * * *'   # 09:00 PM BST — Progress check
-    - cron: '0 23 * * *'   # 12:00 AM BST — Midnight summary
-  workflow_dispatch:        # Manual trigger from GitHub UI
+    - cron: '0 6  * * *'   # 07:00 AM BST — Morning motivation   (fallback)
+    - cron: '0 8  * * *'   # 09:00 AM BST — Progress check       (fallback)
+    - cron: '0 11 * * *'   # 12:00 PM BST — Midday check         (fallback)
+    - cron: '0 14 * * *'   # 03:00 PM BST — Progress check       (fallback)
+    - cron: '0 17 * * *'   # 06:00 PM BST — Progress check       (fallback)
+    - cron: '0 20 * * *'   # 09:00 PM BST — Progress check       (fallback)
+    - cron: '0 23 * * *'   # 12:00 AM BST — Midnight summary     (fallback)
 
 jobs:
   send-email:
@@ -44,13 +53,29 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      # 07:00 AM BST — rich morning motivation email
-      - name: 7 AM BST — Morning motivation
-        if: github.event.schedule == '0 6  * * *' || github.event_name == 'workflow_dispatch'
+      # ── Triggered by cron-job.org via workflow_dispatch ──────────────────────
+      - name: Dispatch — Morning (cron-job.org)
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.email_type == 'morning'
         run: python resume_tracker.py morning
 
-      # 09:00 AM / 03:00 PM / 06:00 PM / 09:00 PM BST — progress check
-      - name: Progress check (9 AM / 3 PM / 6 PM / 9 PM BST)
+      - name: Dispatch — Check (cron-job.org)
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.email_type == 'check'
+        run: python resume_tracker.py check
+
+      - name: Dispatch — Midday (cron-job.org)
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.email_type == 'midday'
+        run: python resume_tracker.py midday
+
+      - name: Dispatch — Midnight (cron-job.org)
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.email_type == 'midnight'
+        run: python resume_tracker.py midnight
+
+      # ── GitHub Actions cron fallback (if cron-job.org ever misses) ──────────
+      - name: Cron fallback — Morning
+        if: github.event.schedule == '0 6  * * *'
+        run: python resume_tracker.py morning
+
+      - name: Cron fallback — Check (9 AM / 3 PM / 6 PM / 9 PM)
         if: >
           github.event.schedule == '0 8  * * *' ||
           github.event.schedule == '0 14 * * *' ||
@@ -58,12 +83,10 @@ jobs:
           github.event.schedule == '0 20 * * *'
         run: python resume_tracker.py check
 
-      # 12:00 PM BST — dedicated midday progress email (exact noon UK)
-      - name: 12 PM BST — Midday check
+      - name: Cron fallback — Midday
         if: github.event.schedule == '0 11 * * *'
         run: python resume_tracker.py midday
 
-      # 12:00 AM BST — end-of-day summary (exact midnight UK)
-      - name: Midnight BST — Final summary
+      - name: Cron fallback — Midnight
         if: github.event.schedule == '0 23 * * *'
         run: python resume_tracker.py midnight
