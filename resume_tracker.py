@@ -288,6 +288,116 @@ $n.Dispose()
 
 # ─── Email builders ───────────────────────────────────────────────────────────
 
+def _month_table_html():
+    """HTML table of this month's applications by role, plus summary — included in every email."""
+    log    = load_log()
+    uk_now = now_uk()
+    month_prefix = uk_now.strftime("%Y-%m")
+    month_name   = uk_now.strftime("%B %Y")
+
+    def _t(e):
+        return e.get("total", 0) if isinstance(e, dict) else (e or 0)
+
+    def _r(e, role):
+        if isinstance(e, dict):
+            return e.get("roles", {}).get(role, 0)
+        return 0
+
+    # collect and sort month entries
+    rows = sorted(
+        [(d, log[d]) for d in log if d.startswith(month_prefix)],
+        key=lambda x: x[0]
+    )
+    if not rows:
+        return ""
+
+    role_keys   = list(ROLES.keys())
+    role_labels = [ROLES[r].split()[0] for r in role_keys]   # first word: "AI", "Data"→"Data"...
+
+    # shorter role column headers
+    col_heads = ["AI", "DA", "DS", "ML", "SE"]
+
+    th = "style='padding:6px 8px;font-size:11px;font-weight:bold;color:#fff;text-align:center;background:#1a5276;'"
+    header_row = (
+        f"<tr>"
+        f"<th {th}>Date</th>"
+        f"<th {th}>Total</th>"
+        + "".join(f"<th {th}>{h}</th>" for h in col_heads) +
+        f"</tr>"
+    )
+
+    # totals accumulators
+    col_totals = {r: 0 for r in role_keys}
+    grand = 0
+    days_active = 0
+    goal_days   = 0
+
+    data_rows = ""
+    for date_str, entry in rows:
+        t = _t(entry)
+        grand       += t
+        days_active += 1 if t > 0 else 0
+        goal_days   += 1 if t >= GOAL else 0
+        for r in role_keys:
+            col_totals[r] += _r(entry, r)
+
+        day_label = date_str[8:]   # "01", "02", …
+        if t >= GOAL:
+            row_bg = "#eafaf1"
+            total_color = "#1e8449"
+        elif t == 0:
+            row_bg = "#fdedec"
+            total_color = "#c0392b"
+        else:
+            row_bg = "#fff"
+            total_color = "#2c3e50"
+
+        td  = f"style='padding:5px 8px;font-size:12px;text-align:center;border-bottom:1px solid #eee;color:#2c3e50;background:{row_bg};'"
+        tdt = f"style='padding:5px 8px;font-size:12px;text-align:center;border-bottom:1px solid #eee;font-weight:bold;color:{total_color};background:{row_bg};'"
+        data_rows += (
+            f"<tr>"
+            f"<td {td}>{day_label}</td>"
+            f"<td {tdt}>{t}</td>"
+            + "".join(f"<td {td}>{_r(entry, r) or '—'}</td>" for r in role_keys) +
+            f"</tr>"
+        )
+
+    # summary / totals row
+    tds = "style='padding:6px 8px;font-size:12px;font-weight:bold;text-align:center;background:#eaf4fb;color:#1a5276;border-top:2px solid #2980b9;'"
+    totals_row = (
+        f"<tr>"
+        f"<td {tds}>Total</td>"
+        f"<td {tds}>{grand}</td>"
+        + "".join(f"<td {tds}>{col_totals[r]}</td>" for r in role_keys) +
+        f"</tr>"
+    )
+
+    avg = round(grand / days_active, 1) if days_active else 0
+    summary_line = (
+        f"<p style='margin:10px 0 0;font-size:12px;color:#566573;'>"
+        f"<b>{month_name}:</b> &nbsp;"
+        f"{grand} applications &nbsp;&middot;&nbsp; "
+        f"{days_active} active days &nbsp;&middot;&nbsp; "
+        f"avg {avg}/day &nbsp;&middot;&nbsp; "
+        f"goal hit {goal_days} days"
+        f"</p>"
+    )
+
+    return (
+        f"<tr><td style='padding:0 28px 24px;'>"
+        f"<p style='margin:0 0 8px;font-size:12px;font-weight:bold;color:#1a5276;"
+        f"text-transform:uppercase;letter-spacing:1.5px;'>{month_name} — Application Log</p>"
+        f"<div style='overflow-x:auto;'>"
+        f"<table width='100%' cellpadding='0' cellspacing='0' "
+        f"style='border-collapse:collapse;border-radius:8px;overflow:hidden;'>"
+        f"{header_row}{data_rows}{totals_row}"
+        f"</table>"
+        f"</div>"
+        f"{summary_line}"
+        f"</td></tr>"
+    )
+
+
 def _html_section(title, content, bg="#eaf4fb", border="#2980b9", title_color="#1a5276",
                    text_color="#2c3e50", padding="0 28px 20px"):
     """Reusable coloured card section for emails."""
@@ -473,6 +583,8 @@ def build_morning_html(llm=None):
       </p>
     </div>
   </td></tr>
+
+  {_month_table_html()}
 
   <tr><td style='background:#f8f9fa;padding:16px 28px;text-align:center;'>
     <p style='margin:0;font-size:12px;color:#7f8c8d;'>
@@ -672,6 +784,8 @@ def build_midday_html(applied, roles_data, label_time="12:00 PM"):
 
   {extra_sections}
 
+  {_month_table_html()}
+
 </table>
 <p style='text-align:center;font-size:11px;color:#bbb;margin-top:14px;'>
   Job Application Tracker &nbsp;&middot;&nbsp; Baddela Raju &nbsp;&middot;&nbsp; {date_str}
@@ -792,6 +906,8 @@ def build_html(applied, goal, roles_data, is_goal_met):
   {_html_section("Role Gap — Fix It", role_gap,
      bg="#fef9e7", border="#f39c12", title_color="#d68910",
      padding="0 28px 24px") if role_gap else ""}
+
+  {_month_table_html()}
 
 </table>
 <p style='text-align:center;font-size:11px;color:#bbb;margin-top:14px;'>
