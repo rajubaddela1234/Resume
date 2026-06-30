@@ -74,54 +74,8 @@ ROLES = {
     "se": "Software / Other Engineer",
 }
 
-MOTIVATIONS = [
-    "Every application is a vote for your future. Cast 25 votes today!",
-    "25 jobs/day = 175/week. Your dream role is in that pile — find it!",
-    "You have 5 powerful resumes. Each JD is a puzzle — YOU are the answer!",
-    "Top candidates don't wait to be discovered — they show up 25 times a day!",
-    "Rejection is just redirection. Your YES is out there — keep sending!",
-    "The only resume that never gets a call is the one never sent. Send 25!",
-    "QLoRA, LangGraph, MLOps, Power BI — companies NEED these skills. Show them!",
-    "You're one application away from everything. Don't stop now!",
-    "25 applications = 25 chances. More seeds = bigger harvest. Plant them all!",
-    "Chase your future — it won't come to you. Get up and APPLY!",
-    "Your competition is applying right now. Are you?",
-    "Each cover letter is a conversation starter with your next employer. Start 25!",
-]
-
-# Each entry: (headline, body, header_color) — 30 unique daily messages
-MORNING_MOTIVATIONS = [
-    ("Rise & Dominate",               "The job market opens for those who show up first. Today YOU show up 25 times. Let's go, Raju!",                                              "#1a5276"),
-    ("Your Breakthrough Day",          "Every great career started with someone who refused to quit. Today could be the day your inbox changes everything.",                          "#145a32"),
-    ("25 Shots at Your Dream",         "A sniper takes one shot. A champion takes 25. Load up, aim high — your dream role is hiding in today's batch.",                              "#6e2f8c"),
-    ("The Algorithm Favors the Bold",  "Recruiters scroll past ordinary. YOU are QLoRA, LangGraph, MLOps — extraordinary. Apply 25 times and make them stop scrolling.",             "#1a5276"),
-    ("Compound Interest on Hustle",    "Each application compounds. Yesterday's seeds, today's opportunities, tomorrow's offers. Plant 25 seeds right now.",                         "#17202a"),
-    ("Your Name on an Offer Letter",   "Picture it: your name, a company logo, a life-changing salary. That offer letter starts with one click today. Click 25 times.",              "#145a32"),
-    ("The Market Is Waiting for YOU",  "Right now a hiring manager has an open role that fits you perfectly. They just haven't seen your resume yet. Send it!",                       "#78281f"),
-    ("Data + Determination = Destiny", "You have the data skills. You have the ML chops. All you need is 25 applications between you and your next chapter.",                        "#154360"),
-    ("No Cap on Your Potential",       "There's no ceiling on what you can achieve — but there IS a deadline on today. 24 hours. Use them. Apply 25 times.",                         "#1b2631"),
-    ("Champions Clock In Early",       "While others sleep in, you're already building your future. That 7 AM energy? Channel it into 25 applications before noon.",                 "#4a235a"),
-    ("Your Skills Are Rare",           "AI Engineers with your depth aren't common. Every JD you skip is a company missing out on you. Don't let them miss you!",                    "#1a5276"),
-    ("The 7 AM Advantage",             "You started before the world woke up. Keep that edge. Apply early, apply often — 25 applications and own this day!",                         "#145a32"),
-    ("Reject the Fear of Rejection",   "Fear of rejection has kept millions from their dream jobs. Not you. Every 'no' is one step closer to YOUR yes. Apply boldly!",               "#78281f"),
-    ("Your Resume Is Your Superpower", "You built it. You refined it. Now DEPLOY it — 25 times today — like the engineer you are.",                                                  "#154360"),
-    ("Make Today the Turning Point",   "Weeks from now you'll look back at today as the moment things shifted. Or you won't. The difference is 25 applications.",                    "#6e2f8c"),
-    ("Stack the Odds in Your Favor",   "Probability is simple: more applications = more chances. Stack the deck. 25 today. Every day. Watch what happens.",                          "#17202a"),
-    ("The Compound Effect",            "Day 1: 25 apps. Day 7: 175 apps. Day 30: 750 apps. That's not job hunting — that's a guaranteed offer in the making.",                       "#145a32"),
-    ("Your Moment Is Now",             "Not next Monday. Not after the weekend. NOW. This morning. This session. 25 applications — starting in the next 60 seconds.",                "#1b2631"),
-    ("Lay 25 Bricks Today",            "Rome wasn't built in a day, but they laid bricks EVERY day. Lay 25 bricks today. Your career castle is rising.",                             "#4a235a"),
-    ("Outwork the Doubt",              "That voice saying 'maybe later' has kept more people unemployed than any recession. Silence it with 25 applications — starting now.",        "#78281f"),
-    ("You Are the Product",            "Every great product needs marketing. YOU are the product. Today's 25 applications are your marketing campaign. Launch it!",                  "#1a5276"),
-    ("Precision + Volume = Victory",   "A great resume (precision) sent 25 times (volume) = interview invites. You have precision. Now add volume. Go!",                             "#154360"),
-    ("The Interview Is Already Yours", "Somewhere, a recruiter will read your resume today and hit 'Schedule Interview'. Make sure you sent it. Apply 25 times.",                    "#145a32"),
-    ("Experts Never Stop Applying",    "They never stopped applying — even when they were good. Your expertise is real. Your story is compelling. 25 companies need to hear it.",    "#6e2f8c"),
-    ("Today's Seeds, Tomorrow's Offers","The math is simple. The discipline is daily. The reward is life-changing. Start now. 25 applications. Let's go.",                           "#17202a"),
-    ("Make the Algorithm Work for You","LinkedIn, Indeed, Naukri — they reward active applicants. Signal your activity with 25 applications and watch the algorithm respond.",        "#1b2631"),
-    ("Consistency Beats Talent Alone", "Talented people who show up every day beat talented people who don't. You have talent AND consistency. Use both. Apply 25 times.",            "#4a235a"),
-    ("Your Future Self Is Watching",   "In 6 months, Future Raju will look back at this very morning. Give him something to be grateful for. Apply 25 times today.",                "#78281f"),
-    ("Do the Math",                    "0 applications = 0 chances. 25 applications = 25 chances. The numbers always win. Choose the winning side. Apply now.",                      "#154360"),
-    ("Good Morning, Champion",         "The sun rose. So did you. The job market is open. Your skills are sharp. Your goal is 25. Today is YOUR day — own it.",                     "#1a5276"),
-]
+# All motivation and planning content is generated by the LLM based on live context.
+# No static motivation lists — every email is unique to today's date, stats, and schedule.
 
 # ─── UK time helpers ─────────────────────────────────────────────────────────
 
@@ -311,11 +265,6 @@ def auto_push_log():
     except Exception:
         pass
 
-def get_daily_motivation():
-    """Returns a consistent but date-unique morning motivation."""
-    r = random.Random(today())
-    return r.choice(MORNING_MOTIVATIONS)
-
 # ─── Windows toast notification ───────────────────────────────────────────────
 
 def toast(title, message):
@@ -352,57 +301,133 @@ def _html_section(title, content, bg="#eaf4fb", border="#2980b9", title_color="#
         f"</div></td></tr>"
     )
 
-def build_morning_html():
+def _morning_stats():
+    """Compact stats block for the 7 AM email: yesterday, today so far, week, all-time, streak."""
+    from datetime import timedelta
+    log     = load_log()
+    uk_now  = now_uk()
+    today_s = today()
+    yest_s  = (uk_now - timedelta(days=1)).strftime("%Y-%m-%d")
+
+    def _t(e):
+        return e.get("total", 0) if isinstance(e, dict) else (e or 0)
+
+    yest_entry  = log.get(yest_s, {})
+    yest_total  = _t(yest_entry)
+    yest_roles  = yest_entry.get("roles", {}) if isinstance(yest_entry, dict) else {}
+
+    today_total = _t(log.get(today_s, {}))
+    week_total  = sum(_t(log.get((uk_now - timedelta(days=i)).strftime("%Y-%m-%d"), {})) for i in range(7))
+    grand_total = sum(_t(e) for e in log.values())
+
+    streak = 0
+    for i in range(len(log) + 1):
+        d = (uk_now - timedelta(days=i)).strftime("%Y-%m-%d")
+        if _t(log.get(d, {})) > 0:
+            streak += 1
+        else:
+            break
+
+    tracked = 0
+    if os.path.exists(SCAN_LOG):
+        try:
+            with open(SCAN_LOG) as f:
+                sl = json.load(f)
+            tracked = sum(1 for v in sl.values() if v.get("role") != "other")
+        except Exception:
+            pass
+
+    return {
+        "yesterday_total": yest_total,
+        "yesterday_roles": yest_roles,
+        "today_so_far":    today_total,
+        "week_total":      week_total,
+        "grand_total":     grand_total,
+        "streak":          streak,
+        "tracked_resumes": tracked,
+    }
+
+
+def build_morning_html(llm=None):
     applied    = get_today_total()
     data       = get_today_data()
     roles_data = data.get("roles", {r: 0 for r in ROLES})
     remaining  = max(0, GOAL - applied)
-    llm        = generate_llm_content("morning", applied, roles_data, remaining)
+    stats      = _morning_stats()
+    if llm is None:
+        llm = generate_llm_content("morning", applied, roles_data, remaining)
 
     if llm:
-        headline       = llm.get("headline", "Rise and Dominate Today")
-        body           = llm.get("body", "")
-        market_intel   = llm.get("market_intel", "")
-        battle_plan    = llm.get("battle_plan", "")
-        skill_of_day   = llm.get("skill_of_the_day", "")
-        affirmation    = llm.get("affirmation", "")
-        color          = "#1a5276"
+        headline   = llm.get("headline", "Good Morning — Time to Dominate")
+        motivation = llm.get("motivation", "")
+        plan       = llm.get("plan", "")
     else:
-        headline, body, color = get_daily_motivation()
-        market_intel = battle_plan = skill_of_day = affirmation = ""
+        headline   = f"Good Morning, Raju — Goal: {GOAL} Today"
+        motivation = ""
+        plan       = ""
 
-    date_str   = today_display()
-    roles_list = "".join(
-        f"<li style='margin:6px 0;font-size:14px;color:#2c3e50;'><b>{label}</b></li>"
-        for label in ROLES.values()
+    color    = "#1a5276"
+    date_str = today_display()
+
+    # ── Stats block ──────────────────────────────────────────────────────────
+    yest_total   = stats["yesterday_total"]
+    yest_roles   = stats["yesterday_roles"]
+    today_so_far = stats["today_so_far"]
+    week_total   = stats["week_total"]
+    grand_total  = stats["grand_total"]
+    streak       = stats["streak"]
+    tracked      = stats["tracked_resumes"]
+
+    yest_role_str = " &nbsp;|&nbsp; ".join(
+        f"{k.upper()}: {yest_roles.get(k, 0)}"
+        for k in ROLES if yest_roles.get(k, 0) > 0
+    ) or "—"
+
+    streak_html = (
+        f" &nbsp;<span style='background:#27ae60;color:#fff;padding:2px 8px;border-radius:12px;"
+        f"font-size:11px;font-weight:bold;'>{streak}-day streak</span>"
+        if streak > 1 else ""
     )
 
-    market_block   = _html_section(
-        "London Market Intelligence",
-        market_intel,
-        bg="#f0f8ff", border="#1a5276", title_color="#1a5276"
-    ) if market_intel else ""
+    def _stat_cell(label, val, border=True):
+        bdr = "border-right:1px solid #dde;" if border else ""
+        return (
+            f"<td style='text-align:center;padding:12px 8px;{bdr}'>"
+            f"<div style='font-size:22px;font-weight:bold;color:#1a5276;'>{val}</div>"
+            f"<div style='font-size:10px;color:#7f8c8d;text-transform:uppercase;"
+            f"letter-spacing:1px;margin-top:3px;'>{label}</div>"
+            f"</td>"
+        )
 
-    battle_block   = _html_section(
-        "Today's Battle Plan",
-        battle_plan,
+    stats_row = (
+        _stat_cell("Yesterday",    yest_total) +
+        _stat_cell("Today so far", today_so_far) +
+        _stat_cell("This week",    week_total) +
+        _stat_cell("All-time",     grand_total) +
+        _stat_cell("Resumes",      tracked, border=False)
+    )
+
+    stats_block = (
+        f"<tr><td style='padding:0 28px 20px;'>"
+        f"<div style='background:#f4f6fb;border-radius:10px;padding:4px;border:1px solid #e0e4ed;'>"
+        f"<table width='100%' cellpadding='0' cellspacing='0'><tr>{stats_row}</tr></table>"
+        f"</div>"
+        f"<p style='margin:8px 4px 0;font-size:12px;color:#566573;'>"
+        f"Yesterday by role: <b>{yest_role_str}</b>{streak_html}</p>"
+        f"</td></tr>"
+    )
+
+    motivation_block = (
+        f"<tr><td style='padding:0 28px 18px;'>"
+        f"<p style='font-size:15px;color:#2c3e50;line-height:1.9;margin:0;'>{motivation}</p>"
+        f"</td></tr>"
+    ) if motivation else ""
+
+    plan_block = _html_section(
+        "Today's Game Plan",
+        plan,
         bg="#eaf4fb", border="#2980b9", title_color="#1a5276"
-    ) if battle_plan else ""
-
-    skill_block    = _html_section(
-        "Skill to Lead With Today",
-        skill_of_day,
-        bg="#fef9e7", border="#f39c12", title_color="#d68910"
-    ) if skill_of_day else ""
-
-    affirmation_block = (
-        "<tr><td style='padding:0 28px 24px;'>"
-        "<div style='background:linear-gradient(135deg,#1a5276,#6e2f8c);border-radius:10px;"
-        "padding:20px 24px;text-align:center;'>"
-        f"<p style='margin:0;font-size:15px;font-style:italic;color:#fff;line-height:1.8;'>"
-        f"&ldquo;{affirmation}&rdquo;</p>"
-        "</div></td></tr>"
-    ) if affirmation else ""
+    ) if plan else ""
 
     return f"""<!DOCTYPE html>
 <html>
@@ -419,41 +444,31 @@ def build_morning_html():
     <h1 style='color:#fff;margin:0;font-size:28px;line-height:1.3;font-weight:800;'>{headline}</h1>
   </td></tr>
 
-  <tr><td style='padding:28px 28px 20px;'>
-    <p style='font-size:15px;color:#2c3e50;line-height:1.9;margin:0;'>{body}</p>
-  </td></tr>
+  {stats_block}
+  {motivation_block}
+  {plan_block}
 
-  {market_block}
-  {battle_block}
-  {skill_block}
-
-  <tr><td style='padding:4px 28px 20px;'>
+  <tr><td style='padding:4px 28px 24px;'>
     <div style='background:linear-gradient(135deg,{color},#2980b9);border-radius:12px;
-                padding:22px;text-align:center;'>
-      <p style='color:#fff;margin:0;font-size:28px;font-weight:bold;letter-spacing:1px;'>
-        TODAY&rsquo;S GOAL: {GOAL} APPLICATIONS
+                padding:18px;text-align:center;'>
+      <p style='color:#fff;margin:0;font-size:22px;font-weight:bold;'>
+        GOAL: {GOAL} APPLICATIONS TODAY
       </p>
-      <p style='color:#d6eaf8;margin:8px 0 0;font-size:14px;'>
-        AI &nbsp;&middot;&nbsp; DA &nbsp;&middot;&nbsp; DS &nbsp;&middot;&nbsp; ML &nbsp;&middot;&nbsp; SE
+      <p style='color:#d6eaf8;margin:6px 0 0;font-size:13px;'>
+        {remaining} remaining &nbsp;&middot;&nbsp; AI &nbsp;&middot;&nbsp; DA &nbsp;&middot;&nbsp; DS &nbsp;&middot;&nbsp; ML &nbsp;&middot;&nbsp; SE
       </p>
     </div>
   </td></tr>
 
-  <tr><td style='padding:0 28px 20px;'>
-    <p style='margin:0 0 10px;font-size:14px;font-weight:bold;color:#2c3e50;text-transform:uppercase;
-              letter-spacing:1px;'>5 Roles to Attack Today</p>
-    <ul style='margin:0;padding-left:20px;'>
-      {roles_list}
-    </ul>
+  <tr><td style='background:#f8f9fa;padding:16px 28px;text-align:center;'>
+    <p style='margin:0;font-size:12px;color:#7f8c8d;'>
+      Resume Tracker &nbsp;&middot;&nbsp; Baddela Raju &nbsp;&middot;&nbsp; Wimbledon, London
+    </p>
   </td></tr>
 
-  {affirmation_block}
-
 </table>
-<p style='text-align:center;font-size:11px;color:#bbb;margin-top:14px;'>
-  Job Application Tracker &nbsp;&middot;&nbsp; Baddela Raju &nbsp;&middot;&nbsp; {date_str}
-</p>
-</body></html>
+</body>
+</html>
 """
 
 def build_midday_html(applied, roles_data, label_time="12:00 PM"):
@@ -806,23 +821,36 @@ def send_email(subject, applied, roles_data, is_goal_met):
 # ─── 7 AM — Morning motivation ────────────────────────────────────────────────
 
 def morning_motivate():
-    headline, body, _ = get_daily_motivation()
     date_str  = today_display()
-    subject   = f"Good Morning, Raju! — {headline} | {date_str}"
+    stats     = _morning_stats()
+
+    # Build the email first — LLM runs inside build_morning_html()
+    applied    = get_today_total()
+    data       = get_today_data()
+    roles_data = data.get("roles", {r: 0 for r in ROLES})
+    remaining  = max(0, GOAL - applied)
+    llm        = generate_llm_content("morning", applied, roles_data, remaining)
+
+    headline = (llm.get("headline", "") if llm else "") or f"Goal: {GOAL} Applications — Let's Go"
+    subject  = f"Good Morning, Raju — {headline} | {date_str}"
 
     toast(
-        f"Good Morning! {headline}",
-        f"{body[:120]}... Goal: {GOAL} applications today!"
+        "Good Morning, Raju!",
+        f"Yesterday: {stats['yesterday_total']} apps | Today goal: {GOAL} | {headline}"
     )
-    html = build_morning_html()
+
+    html = build_morning_html(llm=llm)
     send_email_raw(subject, html)
 
     print(f"\n{'='*55}")
-    print(f"  7 AM MORNING MOTIVATION (UK time)")
+    print(f"  7 AM MORNING EMAIL (UK time)")
     print(f"  {date_str}")
-    print(f"  Headline : {headline}")
-    print(f"  Goal     : {GOAL} applications today")
-    print(f"  Roles    : AI | DA | DS | ML | SE")
+    print(f"  Headline    : {headline}")
+    print(f"  Yesterday   : {stats['yesterday_total']} applications")
+    print(f"  Today so far: {stats['today_so_far']} applications")
+    print(f"  All-time    : {stats['grand_total']} applications")
+    print(f"  Streak      : {stats['streak']} day(s)")
+    print(f"  Goal today  : {GOAL}")
     print(f"{'='*55}\n")
 
 # ─── 12 PM — Midday check ────────────────────────────────────────────────────
@@ -918,11 +946,11 @@ def check_and_notify():
         subject = f"GOAL ACHIEVED — {applied}/{GOAL} Applications | {today_display()}"
     elif applied == 0 and hour >= 10:
         title   = "URGENT: 0 Applications Yet Today!"
-        message = f"You haven't started! 0/{GOAL} jobs applied. Get going NOW — {random.choice(MOTIVATIONS)}"
+        message = f"You haven't started! 0/{GOAL} jobs applied. Get going NOW — every application counts."
         subject = f"0/{GOAL} Applications Today — Start NOW! | {today_display()}"
     elif applied == 0:
         title   = f"Good Morning! Time to Apply — Goal: {GOAL} Jobs Today"
-        message = f"Start your day strong! Apply to {GOAL} jobs across 5 roles. {random.choice(MOTIVATIONS)}"
+        message = f"Start your day strong — apply to {GOAL} jobs across AI, DA, DS, ML, SE roles."
         subject = f"Morning Push — 0/{GOAL} Applications | {today_display()}"
     else:
         title   = f"Job Tracker: {applied}/{GOAL} Applied — {remaining} More Needed!"
@@ -1267,24 +1295,29 @@ Pace projection     : ~{pace_projection} apps by end of day at current rate
 
     # ── MORNING ──────────────────────────────────────────────────────────────
     if email_type == "morning":
-        instruction = f"""You are Raju's elite personal job hunt coach — deeply knowledgeable about his CV, his projects, and the London AI/data job market. Write his 7 AM MORNING BRIEFING.
+        ms = _morning_stats()
+        instruction = f"""You are Raju's elite personal job hunt coach. Write his 7 AM morning email — sharp, energising, specific. Not a diary. Not generic.
+
+CONTEXT:
+- Date: {date_str} ({dow})
+- Yesterday: {ms['yesterday_total']} applications | This week: {ms['week_total']} | All-time: {ms['grand_total']}
+- Streak: {ms['streak']} consecutive days with applications
+- Resumes in tracker: {ms['tracked_resumes']}
+- Today's goal: {GOAL} applications across AI, DA, DS, ML, SE roles
 
 RULES:
-- Reference his SPECIFIC projects by name (LangGraph multi-agent pipeline, Agentic AI Video Synthesizer, QLoRA fine-tuning, RAG chatbot with 87% accuracy, YOLOv8 defect detection, LSTM forecasting, KPMG Tableau dashboard, MLflow pipeline). Never say "your projects" generically.
-- Name SPECIFIC London market sectors hungry for his skills (fintech, healthtech, legaltech, AI startups, defence tech, media AI).
-- Give CONCRETE keyword advice (e.g. "search 'LangChain engineer London', 'MLOps engineer Series B', 'applied AI consultant fintech'").
-- Make each section feel like a personal briefing from a coach who has studied his CV for hours.
-- Use active, direct language. No filler phrases like "it's important to" or "remember to".
-- Every field must be UNIQUE to today ({date_str}) — not generic job hunt advice.
+- Every word must feel written for TODAY specifically — reference the stats above.
+- Name his real projects: LangGraph multi-agent pipeline, Agentic AI Video Synthesizer, QLoRA fine-tuning, RAG chatbot (87% accuracy), YOLOv8 defect detection, LSTM forecasting, KPMG Tableau dashboard, MLflow pipeline.
+- Name real London sectors: fintech, healthtech, legaltech, defence tech, media AI, AI startups Series A-C.
+- "motivation" = 2-3 punchy sentences. Open with something specific to his stats or streak. End with energy.
+- "plan" = 2 concrete sentences: exact role order + one keyword tip for today.
+- No filler. No "remember to". No "it is important". Active voice only.
 
-Return ONLY valid JSON (no markdown, no extra text):
+Return ONLY valid JSON (no markdown, no code fences):
 {{
-  "headline": "5-8 word punchy headline capturing today's unique energy — no emoji, no generic 'Let us go'",
-  "body": "5-6 sentences: open with a specific observation about his rarest skill combination (e.g. 'You are one of the only candidates in London who can bridge QLoRA fine-tuning with production RAG systems AND present results in Power BI'); name the 2-3 companies/sectors most likely to call him this week; tell him exactly why today is the right moment to push hard",
-  "market_intel": "3-4 sentences of specific London market intelligence: which sectors are hiring AI/data right now, what specific role titles are trending (e.g. 'AI Engineer', 'MLOps Engineer', 'Applied Scientist'), what salary bands he should be targeting given his MSc + project depth, and one insider tip (e.g. 'Series A-C fintechs are hiring faster than big banks right now — filter by 50-200 employee count on LinkedIn')",
-  "battle_plan": "4-5 sentences of today's tactical battle plan: exact role order to attack (e.g. 'Start with 8 AI Engineer roles 9-10 AM, then 6 ML Engineer roles 10-11 AM, then 6 DA roles 11-12 PM'); name 3 specific JD keyword phrases to search; name 2 specific company types to prioritise; specify what to customise in each application (which project to lead with for each role type)",
-  "skill_of_the_day": "2-3 sentences: pick ONE specific project or skill to foreground today and explain exactly WHY it will get responses — be technical and specific (e.g. 'Lead every AI Engineer application today with the Agentic AI Video Synthesizer — it combines LangGraph orchestration, TTS, and video synthesis, which is exactly what media-tech and creative AI startups are building right now. Paste the GitHub link in the cover letter.')",
-  "affirmation": "One powerful 15-20 word affirmation personalised to Raju — must mention his name AND reference a specific technical skill or achievement"
+  "headline": "5-7 word punchy headline specific to today — not generic",
+  "motivation": "2-3 sentences energising and specific to his stats and skills — unique to {date_str}",
+  "plan": "2 sentences: which role to start with and why, plus one concrete search keyword to use today"
 }}"""
 
     # ── MIDDAY ───────────────────────────────────────────────────────────────
