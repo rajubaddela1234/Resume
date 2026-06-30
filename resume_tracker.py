@@ -328,10 +328,15 @@ def _morning_stats():
         else:
             break
 
-    all_totals  = [_t(e) for e in log.values()]
-    days_active = sum(1 for t in all_totals if t > 0)
-    avg_per_day = round(grand_total / days_active, 1) if days_active else 0
-    goal_hit    = sum(1 for t in all_totals if t >= GOAL)
+    # Month-specific stats (current calendar month)
+    month_prefix  = uk_now.strftime("%Y-%m")
+    month_name    = uk_now.strftime("%B")
+    month_entries = {d: e for d, e in log.items() if d.startswith(month_prefix)}
+    month_totals  = [_t(e) for e in month_entries.values()]
+    days_active   = sum(1 for t in month_totals if t > 0)
+    month_total   = sum(month_totals)
+    avg_per_day   = round(month_total / days_active, 1) if days_active else 0
+    goal_hit      = sum(1 for t in month_totals if t >= GOAL)
 
     return {
         "yesterday_total": yest_total,
@@ -340,6 +345,7 @@ def _morning_stats():
         "week_total":      week_total,
         "grand_total":     grand_total,
         "streak":          streak,
+        "month_name":      month_name,
         "days_active":     days_active,
         "avg_per_day":     avg_per_day,
         "goal_hit":        goal_hit,
@@ -374,6 +380,7 @@ def build_morning_html(llm=None):
     week_total   = stats["week_total"]
     grand_total  = stats["grand_total"]
     streak      = stats["streak"]
+    month_name  = stats["month_name"]
     days_active = stats["days_active"]
     avg_per_day = stats["avg_per_day"]
     goal_hit    = stats["goal_hit"]
@@ -406,9 +413,9 @@ def build_morning_html(llm=None):
         _stat_cell("All-time",     grand_total, border=False)
     )
     row2 = (
-        _stat_cell("Days active",  days_active) +
-        _stat_cell("Avg / day",    avg_per_day) +
-        _stat_cell("Goal hit",     f"{goal_hit} days", border=False)
+        _stat_cell(f"{month_name} active",   days_active) +
+        _stat_cell(f"{month_name} avg/day",  avg_per_day) +
+        _stat_cell(f"{month_name} goal hit", f"{goal_hit} days", border=False)
     )
 
     stats_block = (
@@ -1309,7 +1316,7 @@ CONTEXT:
 - Date: {date_str} ({dow})
 - Yesterday: {ms['yesterday_total']} applications | This week: {ms['week_total']} | All-time: {ms['grand_total']}
 - Streak: {ms['streak']} consecutive days with applications
-- Days active: {ms['days_active']} | Avg/day: {ms['avg_per_day']} | Goal hit: {ms['goal_hit']} days
+- {ms['month_name']}: {ms['days_active']} days active | avg {ms['avg_per_day']}/day | goal hit {ms['goal_hit']} days
 - Today's goal: {GOAL} applications across AI, DA, DS, ML, SE roles
 
 RULES:
