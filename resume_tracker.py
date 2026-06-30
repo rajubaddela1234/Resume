@@ -328,7 +328,10 @@ def _morning_stats():
         else:
             break
 
-    best_day = max((_t(e) for e in log.values()), default=0)
+    all_totals  = [_t(e) for e in log.values()]
+    days_active = sum(1 for t in all_totals if t > 0)
+    avg_per_day = round(grand_total / days_active, 1) if days_active else 0
+    goal_hit    = sum(1 for t in all_totals if t >= GOAL)
 
     return {
         "yesterday_total": yest_total,
@@ -337,7 +340,9 @@ def _morning_stats():
         "week_total":      week_total,
         "grand_total":     grand_total,
         "streak":          streak,
-        "best_day":        best_day,
+        "days_active":     days_active,
+        "avg_per_day":     avg_per_day,
+        "goal_hit":        goal_hit,
     }
 
 
@@ -368,8 +373,10 @@ def build_morning_html(llm=None):
     today_so_far = stats["today_so_far"]
     week_total   = stats["week_total"]
     grand_total  = stats["grand_total"]
-    streak       = stats["streak"]
-    best_day     = stats["best_day"]
+    streak      = stats["streak"]
+    days_active = stats["days_active"]
+    avg_per_day = stats["avg_per_day"]
+    goal_hit    = stats["goal_hit"]
 
     yest_role_str = " &nbsp;|&nbsp; ".join(
         f"{k.upper()}: {yest_roles.get(k, 0)}"
@@ -392,18 +399,25 @@ def build_morning_html(llm=None):
             f"</td>"
         )
 
-    stats_row = (
+    row1 = (
         _stat_cell("Yesterday",    yest_total) +
         _stat_cell("Today so far", today_so_far) +
         _stat_cell("This week",    week_total) +
-        _stat_cell("All-time",     grand_total) +
-        _stat_cell("Best day",     best_day, border=False)
+        _stat_cell("All-time",     grand_total, border=False)
+    )
+    row2 = (
+        _stat_cell("Days active",  days_active) +
+        _stat_cell("Avg / day",    avg_per_day) +
+        _stat_cell("Goal hit",     f"{goal_hit} days", border=False)
     )
 
     stats_block = (
         f"<tr><td style='padding:0 28px 20px;'>"
         f"<div style='background:#f4f6fb;border-radius:10px;padding:4px;border:1px solid #e0e4ed;'>"
-        f"<table width='100%' cellpadding='0' cellspacing='0'><tr>{stats_row}</tr></table>"
+        f"<table width='100%' cellpadding='0' cellspacing='0'>"
+        f"<tr>{row1}</tr>"
+        f"<tr style='border-top:1px solid #dde;'>{row2}</tr>"
+        f"</table>"
         f"</div>"
         f"<p style='margin:8px 4px 0;font-size:12px;color:#566573;'>"
         f"Yesterday by role: <b>{yest_role_str}</b>{streak_html}</p>"
@@ -1295,7 +1309,7 @@ CONTEXT:
 - Date: {date_str} ({dow})
 - Yesterday: {ms['yesterday_total']} applications | This week: {ms['week_total']} | All-time: {ms['grand_total']}
 - Streak: {ms['streak']} consecutive days with applications
-- Best single day: {ms['best_day']} applications
+- Days active: {ms['days_active']} | Avg/day: {ms['avg_per_day']} | Goal hit: {ms['goal_hit']} days
 - Today's goal: {GOAL} applications across AI, DA, DS, ML, SE roles
 
 RULES:
