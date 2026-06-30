@@ -328,14 +328,11 @@ def _morning_stats():
         else:
             break
 
-    tracked = 0
-    if os.path.exists(SCAN_LOG):
-        try:
-            with open(SCAN_LOG) as f:
-                sl = json.load(f)
-            tracked = sum(1 for v in sl.values() if v.get("role") != "other")
-        except Exception:
-            pass
+    import glob as _glob
+    tracked = sum(
+        1 for p in _glob.glob(os.path.join(SCAN_ROOT, "**", "*.docx"), recursive=True)
+        if classify_role(os.path.basename(p)) != "other"
+    )
 
     return {
         "yesterday_total": yest_total,
