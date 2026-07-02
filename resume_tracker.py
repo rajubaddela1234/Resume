@@ -1203,19 +1203,31 @@ def setup_scheduler():
              f"/sc daily /st {midday_t}", "midday",
              f"[{midday_t}] 12 PM UK progress email")
 
+    # On login: scan first (catches files added while laptop was off), then watch
+    register("ResumeTracker_ScanOnLogin",
+             "/sc onlogon /delay 0000:10", "scan",
+             "[Login] Scan on login — catches resumes added while laptop was off")
+
+    # Every 5 minutes: scan (belt-and-suspenders, works even if watcher missed something)
+    register("ResumeTracker_Scan5Min",
+             "/sc minute /mo 5", "scan",
+             "[Every 5 min] Auto-scan & push any new .docx resumes")
+
+    # Watcher: infinite loop, detects new files within 30 s (runs silently, no console)
     watch_cmd = (
         f'schtasks /create /tn "ResumeTracker_Watcher" '
         f'/tr "{tww} watch" /sc onlogon /f'
     )
     r = subprocess.run(watch_cmd, shell=True, capture_output=True, text=True)
     tag = "[OK]  " if r.returncode == 0 else "[FAIL]"
-    print(f"  {tag}  [Login] File watcher starts silently on login (checks every 30s)")
+    print(f"  {tag}  [Login] File watcher starts silently on login (detects within 30s)")
     if r.returncode != 0:
         print(f"         {r.stderr.strip()}")
         print(f"         Run this terminal as Administrator and try again.")
 
     print(f"\n  Drop any .docx resume file into: {SCAN_ROOT}")
-    print(f"  It will be auto-classified and counted within 30 seconds.")
+    print(f"  It will be auto-classified, logged, and pushed within 5 minutes.")
+    print(f"  On next login it also catches anything added while laptop was off.")
     print(f"{'='*60}\n")
 
 # ─── LLM / Groq integration ──────────────────────────────────────────────────
