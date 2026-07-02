@@ -12,7 +12,7 @@ from email.mime.text import MIMEText
 from zoneinfo import ZoneInfo
 
 BASE      = os.path.dirname(os.path.abspath(__file__))   # repo root
-SCAN_ROOT = BASE                                           # scan from repo root
+SCAN_ROOT = BASE                                           # scan from repo root (where .docx folders live)
 JOB_LOG   = os.path.join(BASE, "job_log.json")
 CONFIG    = os.path.join(BASE, "tracker_config.json")
 GOAL      = 25
